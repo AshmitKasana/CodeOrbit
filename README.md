@@ -19,6 +19,8 @@ for the machine-readable credit, and [About](https://codeorbit21.netlify.app/abo
 
 ---
 
+**Created by Ashmit Kasana**
+
 ## Quick start
 
 ```bash
