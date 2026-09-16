@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
-  ArrowRight, Bookmark, Brain, Compass, Github, Info,
-  MessageCircleQuestion, Moon, Route, Search, Sun, Target,
+  ArrowRight, Bookmark, Brain, Github, Home as HomeIcon, Info, LayoutDashboard, LogIn, LogOut,
+  MessageCircleQuestion, Moon, Route, Search, Sun, Target, UserPlus,
 } from 'lucide-react'
 import GlassModal from './glass/GlassModal'
 import { slugify } from '../utils/helpers'
+import { useAuth } from '../hooks/useAuth'
 
 /**
  * Global ⌘K / Ctrl+K command palette — the one place a Glass modal owns
@@ -15,18 +16,27 @@ import { slugify } from '../utils/helpers'
  */
 export default function CommandPalette({ open, onClose, theme, onToggleTheme }) {
   const navigate = useNavigate()
+  const { user, signOut } = useAuth()
   const [query, setQuery] = useState('')
   const [activeIndex, setActiveIndex] = useState(0)
   const inputRef = useRef(null)
 
   const staticCommands = useMemo(
     () => [
-      { id: 'home', label: 'Go to Home', icon: Compass, action: () => navigate('/') },
+      { id: 'home', label: 'Go to Home', icon: HomeIcon, action: () => navigate('/') },
       { id: 'topics', label: 'Browse Topics', icon: Brain, action: () => navigate('/topics') },
       { id: 'roadmap', label: 'Open the Roadmap', icon: Route, action: () => navigate('/roadmap') },
       { id: 'practice', label: 'Practice Problems', icon: Target, action: () => navigate('/practice') },
       { id: 'interview', label: 'Interview Prep', icon: MessageCircleQuestion, action: () => navigate('/interview') },
-      { id: 'bookmarks', label: 'View Bookmarks', icon: Bookmark, action: () => navigate('/bookmarks') },
+      ...(user
+        ? [
+            { id: 'dashboard', label: 'Go to Dashboard', icon: LayoutDashboard, action: () => navigate('/dashboard') },
+            { id: 'bookmarks', label: 'View Bookmarks', icon: Bookmark, action: () => navigate('/bookmarks') },
+          ]
+        : [
+            { id: 'login', label: 'Log In', icon: LogIn, action: () => navigate('/login') },
+            { id: 'signup', label: 'Sign Up', icon: UserPlus, action: () => navigate('/signup') },
+          ]),
       { id: 'about', label: 'About Code Orbit', icon: Info, action: () => navigate('/about') },
       {
         id: 'theme',
@@ -34,9 +44,15 @@ export default function CommandPalette({ open, onClose, theme, onToggleTheme }) 
         icon: theme === 'dark' ? Sun : Moon,
         action: onToggleTheme,
       },
-      { id: 'github', label: 'Open GitHub Repository', icon: Github, action: () => window.open('https://github.com', '_blank', 'noreferrer') },
+      {
+        id: 'github',
+        label: "Open Ashmit Kasana's GitHub",
+        icon: Github,
+        action: () => window.open('https://github.com/AshmitKasana', '_blank', 'noopener,noreferrer'),
+      },
+      ...(user ? [{ id: 'signout', label: 'Sign Out', icon: LogOut, action: async () => { await signOut(); navigate('/') } }] : []),
     ],
-    [navigate, theme, onToggleTheme]
+    [navigate, theme, onToggleTheme, user, signOut]
   )
 
   const q = query.trim().toLowerCase()

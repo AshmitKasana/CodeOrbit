@@ -1,9 +1,11 @@
-# DSA AI
+# Code Orbit
 
 An AI-powered Data Structures & Algorithms learning platform. Type any programming/DSA question in
 plain English and get a full, structured, textbook-style breakdown: overview, syntax, memory model,
 runnable code examples, complexity analysis, cross-language comparisons, common mistakes, interview
 questions, and practice problems.
+
+**Created by Ashmit Kasana**
 
 ## Quick start
 

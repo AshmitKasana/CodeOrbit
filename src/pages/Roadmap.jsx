@@ -5,6 +5,7 @@ import { Check, CircleDashed, Loader2 } from 'lucide-react'
 import { ROADMAP } from '../utils/constants'
 import { getRoadmapProgress, setRoadmapStatus, slugify } from '../utils/helpers'
 import Reveal, { revealItem } from '../components/Reveal'
+import { useAuth } from '../hooks/useAuth'
 
 const STATUSES = ['Not Started', 'Learning', 'Completed']
 const STATUS_STYLE = {
@@ -16,13 +17,14 @@ const STATUS_ICON = { 'Not Started': CircleDashed, Learning: Loader2, Completed:
 
 export default function Roadmap() {
   const navigate = useNavigate()
+  const { user } = useAuth()
   const [progress, setProgress] = useState({})
 
-  useEffect(() => setProgress(getRoadmapProgress()), [])
+  useEffect(() => setProgress(getRoadmapProgress(user?.id)), [user?.id])
 
   function cycleStatus(id, current) {
     const next = STATUSES[(STATUSES.indexOf(current) + 1) % STATUSES.length]
-    setRoadmapStatus(id, next)
+    setRoadmapStatus(id, next, user?.id)
     setProgress((p) => ({ ...p, [id]: next }))
   }
 

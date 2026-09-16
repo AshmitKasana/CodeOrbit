@@ -11,7 +11,7 @@ export default function GlassButton({ className = '', children, ...rest }) {
   return (
     <motion.button
       whileTap={{ scale: 0.96 }}
-      className={`glass-surface glass-interactive inline-flex items-center justify-center gap-1.5 rounded-xl px-4 py-2 text-sm font-medium text-slate-800 dark:text-slate-100 ${className}`}
+      className={`glass-surface glass-interactive inline-flex items-center justify-center gap-1.5 rounded-xl px-4 py-2 text-sm font-medium text-slate-800 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-white/60 dark:text-slate-100 dark:disabled:hover:bg-white/[0.06] ${className}`}
       {...rest}
     >
       {children}

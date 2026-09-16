@@ -2,15 +2,17 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Bookmark, Trash2 } from 'lucide-react'
 import { getBookmarks, toggleBookmark } from '../utils/helpers'
+import { useAuth } from '../hooks/useAuth'
 
 export default function Bookmarks() {
   const navigate = useNavigate()
+  const { user } = useAuth()
   const [bookmarks, setBookmarks] = useState([])
 
-  useEffect(() => setBookmarks(getBookmarks()), [])
+  useEffect(() => setBookmarks(getBookmarks(user?.id)), [user?.id])
 
   function remove(b) {
-    const next = toggleBookmark(b)
+    const next = toggleBookmark(b, user?.id)
     setBookmarks(next)
   }
 
@@ -19,7 +21,7 @@ export default function Bookmarks() {
       <div className="mb-8 text-center">
         <h1 className="font-display text-3xl font-bold text-slate-900 dark:text-white sm:text-4xl">Bookmarks</h1>
         <p className="mx-auto mt-3 max-w-lg text-slate-500 dark:text-slate-400">
-          Topics you've saved for later. Stored locally in this browser.
+          Topics you've saved for later, tied to your account on this browser.
         </p>
       </div>
 

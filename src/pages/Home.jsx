@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { Clock, Code2, GitCompareArrows, Layers, ListChecks, Sparkles } from 'lucide-react'
+import { Code2, GitCompareArrows, History, Layers, ListChecks, Sparkles } from 'lucide-react'
 import SearchBar from '../components/SearchBar'
 import Reveal, { revealItem } from '../components/Reveal'
 import { slugify, getHistory } from '../utils/helpers'
 import { TOPIC_CATALOG } from '../utils/constants'
+import { useAuth } from '../hooks/useAuth'
 
 const FEATURES = [
   { icon: Sparkles, title: 'Natural-language search', text: 'Ask in plain English — "Explain pointers in Java" — no rigid syntax required.' },
@@ -17,9 +18,10 @@ const FEATURES = [
 
 export default function Home() {
   const navigate = useNavigate()
+  const { user } = useAuth()
   const [history, setHistory] = useState([])
 
-  useEffect(() => setHistory(getHistory()), [])
+  useEffect(() => setHistory(getHistory(user?.id)), [user?.id])
 
   function handleSubmit(query) {
     navigate(`/learn/${slugify(query)}`, { state: { rawQuery: query } })
@@ -68,7 +70,7 @@ export default function Home() {
       {history.length > 0 && (
         <Reveal as="section" className="mx-auto max-w-4xl px-4 pb-14">
           <div className="mb-3 flex items-center gap-2 text-sm font-medium text-slate-500 dark:text-slate-400">
-            <Clock size={15} /> Recent Searches
+            <History size={15} /> Recent Searches
           </div>
           <div className="flex flex-wrap gap-2">
             {history.slice(0, 8).map((h) => (
