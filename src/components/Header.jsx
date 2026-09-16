@@ -15,6 +15,7 @@ const NAV = [
   { to: '/roadmap', label: 'Roadmap' },
   { to: '/practice', label: 'Practice' },
   { to: '/interview', label: 'Interview' },
+  { to: '/pricing', label: 'Pricing' },
 ]
 
 export default function Header({ theme, onToggleTheme, onOpenSearch }) {

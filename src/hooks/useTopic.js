@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { generateExplanation, askFollowUp as askFollowUpService, LOADING_STAGES } from '../services/aiService'
 import { addToHistory } from '../utils/helpers'
 import { useAuth } from './useAuth'
+import { useGenerationGate } from './useGenerationGate'
 
 /**
  * Drives the AI generation lifecycle for a single learning query: staged
@@ -10,7 +11,8 @@ import { useAuth } from './useAuth'
  */
 export function useTopic(rawQuery, level) {
   const { user } = useAuth()
-  const [status, setStatus] = useState('idle') // idle | loading | success | error
+  const gate = useGenerationGate()
+  const [status, setStatus] = useState('idle') // idle | loading | success | error | limit
   const [stageIndex, setStageIndex] = useState(0)
   const [result, setResult] = useState(null)
   const [error, setError] = useState(null)
@@ -26,12 +28,19 @@ export function useTopic(rawQuery, level) {
       setStatus('success')
       return
     }
+    // A cached topic is always free to re-view — only a genuinely NEW
+    // generation call counts against the free-tier daily limit.
+    if (!gate.canGenerate()) {
+      setStatus('limit')
+      return
+    }
     setStatus('loading')
     setStageIndex(0)
     setError(null)
     try {
       const data = await generateExplanation(rawQuery, level, setStageIndex)
       cache.current.set(cacheKey, data)
+      gate.recordGeneration()
       setResult(data)
       setStatus('success')
       addToHistory({ slug: data.slug, title: data.title, query: rawQuery, language: data.language }, user?.id)
@@ -39,7 +48,8 @@ export function useTopic(rawQuery, level) {
       setError(err)
       setStatus('error')
     }
-  }, [rawQuery, level, user?.id])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rawQuery, level, user?.id, gate.isPro])
 
   useEffect(() => {
     run()

@@ -22,6 +22,7 @@ const Topics = lazy(() => import('./pages/Topics'))
 const Roadmap = lazy(() => import('./pages/Roadmap'))
 const Practice = lazy(() => import('./pages/Practice'))
 const Interview = lazy(() => import('./pages/Interview'))
+const Pricing = lazy(() => import('./pages/Pricing'))
 const Bookmarks = lazy(() => import('./pages/Bookmarks'))
 const About = lazy(() => import('./pages/About'))
 const Login = lazy(() => import('./pages/Login'))
@@ -87,6 +88,7 @@ export default function App() {
               <Route path="/roadmap" element={page(<Roadmap />)} />
               <Route path="/practice" element={page(<Practice />)} />
               <Route path="/interview" element={page(<Interview />)} />
+              <Route path="/pricing" element={page(<Pricing />)} />
               <Route path="/about" element={page(<About />)} />
 
               <Route path="/login" element={page(<Login />)} />

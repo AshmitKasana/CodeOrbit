@@ -8,6 +8,7 @@ const NAV_LINKS = [
   { to: '/roadmap', label: 'Roadmap' },
   { to: '/practice', label: 'Practice' },
   { to: '/interview', label: 'Interview' },
+  { to: '/pricing', label: 'Pricing' },
   { to: '/about', label: 'About' },
 ]
 

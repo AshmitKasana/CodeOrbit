@@ -158,6 +158,48 @@ export function setRoadmapStatus(id, status, userId) {
   return progress
 }
 
+// --- Free-tier usage tracking ------------------------------------------
+// A soft, client-side daily quota for AI generations (see
+// FREE_DAILY_GENERATION_LIMIT in constants.js and useGenerationGate.js).
+// Like everything else in this file, it's scoped per signed-in user where
+// possible so switching accounts on the same device doesn't share a quota
+// — but note this is trivially reset by clearing localStorage. That's an
+// intentional MVP tradeoff (consistent with the rest of the app's
+// "localStorage first, real backend later" approach): it nudges free users
+// toward upgrading without needing a database write on every generation.
+// BILLING_SETUP.md documents the Supabase-backed hardening path.
+const USAGE_KEY = 'dsa-ai:usage'
+
+function todayKey() {
+  return new Date().toISOString().slice(0, 10)
+}
+
+export function getUsageToday(userId) {
+  try {
+    const raw = localStorage.getItem(USAGE_KEY)
+    const data = raw ? JSON.parse(raw) : {}
+    const entry = data[userId || 'anon']
+    return entry && entry.day === todayKey() ? entry.count : 0
+  } catch {
+    return 0
+  }
+}
+
+export function incrementUsageToday(userId) {
+  try {
+    const raw = localStorage.getItem(USAGE_KEY)
+    const data = raw ? JSON.parse(raw) : {}
+    const key = userId || 'anon'
+    const prev = data[key]
+    const count = prev && prev.day === todayKey() ? prev.count + 1 : 1
+    data[key] = { day: todayKey(), count }
+    localStorage.setItem(USAGE_KEY, JSON.stringify(data))
+    return count
+  } catch {
+    return 0
+  }
+}
+
 export function getStoredTheme() {
   try {
     return localStorage.getItem(THEME_KEY)

@@ -22,6 +22,7 @@ import LoadingState from '../components/LoadingState'
 import ErrorState from '../components/ErrorState'
 import CodePlayground from '../components/CodePlayground'
 import FollowUpChat from '../components/FollowUpChat'
+import UpgradePrompt from '../components/UpgradePrompt'
 
 import { useTopic } from '../hooks/useTopic'
 import { useAuth } from '../hooks/useAuth'
@@ -60,6 +61,7 @@ export default function Learn() {
 
   if (status === 'loading' || status === 'idle') return <LoadingState stageIndex={stageIndex} />
   if (status === 'error') return <ErrorState error={error} onRetry={retry} />
+  if (status === 'limit') return <UpgradePrompt isSignedIn={Boolean(user)} />
   if (!result) return null
 
   return (

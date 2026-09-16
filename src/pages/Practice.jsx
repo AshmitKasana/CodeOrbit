@@ -3,23 +3,33 @@ import { useNavigate } from 'react-router-dom'
 import { ArrowUpRight, Loader2 } from 'lucide-react'
 import SearchBar from '../components/SearchBar'
 import PracticeCard from '../components/PracticeCard'
+import UpgradePrompt from '../components/UpgradePrompt'
 import { generateExplanation } from '../services/aiService'
 import { slugify } from '../utils/helpers'
 import { TOPIC_CATALOG } from '../utils/constants'
+import { useGenerationGate } from '../hooks/useGenerationGate'
 
 const QUICK_TOPICS = ['Arrays', 'Linked List', 'Binary Search', 'Dynamic Programming', 'Graphs', 'Pointers']
 
 export default function Practice() {
   const navigate = useNavigate()
+  const gate = useGenerationGate()
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState(null)
   const [query, setQuery] = useState(null)
+  const [limitReached, setLimitReached] = useState(false)
 
   async function loadTopic(topic) {
+    if (!gate.canGenerate()) {
+      setLimitReached(true)
+      return
+    }
+    setLimitReached(false)
     setLoading(true)
     setQuery(topic)
     try {
       const data = await generateExplanation(topic, 'Intermediate', () => {})
+      gate.recordGeneration()
       setResult(data)
     } finally {
       setLoading(false)
@@ -59,7 +69,9 @@ export default function Practice() {
         </div>
       )}
 
-      {!loading && result && (
+      {!loading && limitReached && <UpgradePrompt isSignedIn={gate.isSignedIn} />}
+
+      {!loading && !limitReached && result && (
         <div className="mt-10 space-y-8">
           <button
             onClick={() => navigate(`/learn/${slugify(query)}`, { state: { rawQuery: query } })}
@@ -80,7 +92,7 @@ export default function Practice() {
         </div>
       )}
 
-      {!loading && !result && (
+      {!loading && !limitReached && !result && (
         <div className="mt-10 grid gap-3 sm:grid-cols-3">
           {Object.values(TOPIC_CATALOG).flat().slice(0, 9).map((t) => (
             <button key={t} onClick={() => loadTopic(t)} className="card card-hover px-4 py-3 text-left text-sm font-medium text-slate-700 dark:text-slate-200">

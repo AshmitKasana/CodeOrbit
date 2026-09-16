@@ -3,22 +3,32 @@ import { useNavigate } from 'react-router-dom'
 import { ArrowUpRight, Loader2 } from 'lucide-react'
 import SearchBar from '../components/SearchBar'
 import InterviewQuestion from '../components/InterviewQuestion'
+import UpgradePrompt from '../components/UpgradePrompt'
 import { generateExplanation } from '../services/aiService'
 import { slugify } from '../utils/helpers'
+import { useGenerationGate } from '../hooks/useGenerationGate'
 
 const QUICK_TOPICS = ['Pointers', 'Arrays', 'Linked List', 'HashMap', 'Dynamic Programming', 'Graphs']
 
 export default function Interview() {
   const navigate = useNavigate()
+  const gate = useGenerationGate()
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState(null)
   const [query, setQuery] = useState(null)
+  const [limitReached, setLimitReached] = useState(false)
 
   async function loadTopic(topic) {
+    if (!gate.canGenerate()) {
+      setLimitReached(true)
+      return
+    }
+    setLimitReached(false)
     setLoading(true)
     setQuery(topic)
     try {
       const data = await generateExplanation(topic, 'Interview', () => {})
+      gate.recordGeneration()
       setResult(data)
     } finally {
       setLoading(false)
@@ -58,7 +68,9 @@ export default function Interview() {
         </div>
       )}
 
-      {!loading && result && (
+      {!loading && limitReached && <UpgradePrompt isSignedIn={gate.isSignedIn} />}
+
+      {!loading && !limitReached && result && (
         <div className="mt-10 space-y-3">
           <button
             onClick={() => navigate(`/learn/${slugify(query)}`, { state: { rawQuery: query } })}
