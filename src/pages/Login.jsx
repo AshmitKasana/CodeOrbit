@@ -122,7 +122,7 @@ export default function Login() {
         <span className="h-px flex-1 bg-slate-200 dark:bg-surface-border" />
       </div>
 
-      <OAuthButtons />
+      <OAuthButtons showGithub />
     </AuthLayout>
   )
 }
