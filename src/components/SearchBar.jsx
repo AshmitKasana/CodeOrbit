@@ -1,6 +1,7 @@
 import { forwardRef, useEffect, useState } from 'react'
 import { ArrowRight, Search } from 'lucide-react'
 import { EXAMPLE_QUERIES } from '../utils/constants'
+import Magnetic from './Magnetic'
 
 const SearchBar = forwardRef(function SearchBar({ onSubmit, size = 'lg', autoFocus = false }, ref) {
   const [value, setValue] = useState('')
@@ -42,15 +43,17 @@ const SearchBar = forwardRef(function SearchBar({ onSubmit, size = 'lg', autoFoc
             ⌘K
           </kbd>
         )}
-        <button
-          onClick={submit}
-          disabled={!value.trim()}
-          className={`flex shrink-0 items-center gap-1.5 rounded-xl bg-accent font-medium text-accent-fg transition active:scale-[0.97] hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40 ${
-            big ? 'px-5 py-2.5' : 'px-3.5 py-1.5 text-sm'
-          }`}
-        >
-          Learn <ArrowRight size={16} />
-        </button>
+        <Magnetic strength={big ? 0.3 : 0}>
+          <button
+            onClick={submit}
+            disabled={!value.trim()}
+            className={`flex shrink-0 items-center gap-1.5 rounded-xl bg-accent font-medium text-accent-fg transition active:scale-[0.97] hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40 ${
+              big ? 'px-5 py-2.5' : 'px-3.5 py-1.5 text-sm'
+            }`}
+          >
+            Learn <ArrowRight size={16} />
+          </button>
+        </Magnetic>
       </div>
 
       {big && (

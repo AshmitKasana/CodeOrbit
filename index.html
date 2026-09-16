@@ -9,9 +9,81 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
     <title>Code Orbit — Explore. Learn. Master.</title>
     <meta name="description" content="Code Orbit is an AI-powered learning platform for Data Structures, Algorithms, and programming languages. Ask anything, get a structured, textbook-quality breakdown." />
+    <meta name="author" content="Ashmit Kasana" />
+    <link rel="canonical" href="https://codeorbit21.netlify.app/" />
+    <link type="text/plain" rel="author" href="/humans.txt" />
+
+    <!-- Open Graph / link previews (Slack, Discord, iMessage, LinkedIn, etc.) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Code Orbit" />
+    <meta property="og:title" content="Code Orbit — Explore. Learn. Master." />
+    <meta property="og:description" content="Code Orbit is an AI-powered learning platform for Data Structures, Algorithms, and programming languages. Ask anything, get a structured, textbook-quality breakdown." />
+    <meta property="og:url" content="https://codeorbit21.netlify.app/" />
+
+    <!-- Twitter / X card -->
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Code Orbit — Explore. Learn. Master." />
+    <meta name="twitter:description" content="Code Orbit is an AI-powered learning platform for Data Structures, Algorithms, and programming languages." />
+
+    <meta name="theme-color" content="#0a0a0b" />
+
+    <!--
+      Structured data: names Ashmit Kasana as the creator of Code Orbit in a
+      form search engines and AI assistants can actually parse (schema.org
+      Person + WebSite), rather than credit only existing as plain text
+      buried in a footer.
+    -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "WebSite",
+            "@id": "https://codeorbit21.netlify.app/#website",
+            "name": "Code Orbit",
+            "url": "https://codeorbit21.netlify.app/",
+            "description": "Code Orbit is an AI-powered learning platform for Data Structures, Algorithms, and programming languages.",
+            "creator": { "@id": "https://github.com/AshmitKasana#person" },
+            "author": { "@id": "https://github.com/AshmitKasana#person" }
+          },
+          {
+            "@type": "Person",
+            "@id": "https://github.com/AshmitKasana#person",
+            "name": "Ashmit Kasana",
+            "url": "https://github.com/AshmitKasana",
+            "sameAs": ["https://github.com/AshmitKasana"],
+            "jobTitle": "Creator & Developer",
+            "description": "Owner and creator of Code Orbit, an AI-powered DSA learning platform."
+          }
+        ]
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>
+    <!--
+      This app is a client-rendered React SPA: everything below is empty until
+      JavaScript runs, so a plain HTTP fetch (a bot, link-unfurler, or a
+      browsing tool that doesn't execute JS) only ever sees this shell plus
+      the <head> tags above. The noscript block gives at least a readable
+      summary to anything that can't run the app; a real crawler/audit needs
+      a JS-capable browser (or a prerendered/SSR build) to see the rendered
+      page — the <title>/description/OG tags above are what link previews
+      and basic crawlers key off of instead.
+    -->
+    <noscript>
+      <div style="font-family: system-ui, sans-serif; max-width: 640px; margin: 3rem auto; padding: 0 1.5rem; color: #e2e8f0; background: #0a0a0b;">
+        <h1 style="font-size: 1.5rem;">Code Orbit — Explore. Learn. Master.</h1>
+        <p>
+          Code Orbit is an AI-powered learning platform for Data Structures, Algorithms, and
+          programming languages. Ask any DSA or programming question in plain English and get a
+          structured, textbook-quality breakdown: overview, syntax, memory behavior, runnable
+          examples, complexity analysis, cross-language comparisons, common mistakes, interview
+          questions, and practice problems.
+        </p>
+        <p>This app requires JavaScript enabled to run — please enable it and reload the page.</p>
+      </div>
+    </noscript>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

@@ -1,0 +1,12 @@
+/* TEAM */
+Owner, Creator & Developer: Ashmit Kasana
+Site: https://codeorbit21.netlify.app
+GitHub: https://github.com/AshmitKasana
+
+/* THANKS */
+Everyone learning DSA the hard way — this is for you.
+
+/* SITE */
+Standards: HTML5, CSS3, ES2022
+Components: React, React Router, Framer Motion
+Software: Vite, Tailwind CSS, Supabase, lucide-react

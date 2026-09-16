@@ -1,39 +1,31 @@
 import { useState } from 'react'
-import { AlertCircle, LoaderCircle } from 'lucide-react'
+import { AlertCircle, Github, LoaderCircle } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import GlassButton from './glass/GlassButton'
 
+// The real, four-color Google "G" — Google's own brand guidelines require
+// this mark to ship in its official colors, never recolored to match a
+// host site's palette. That makes it the one deliberate, sanctioned
+// exception to Code Orbit's otherwise-monochrome system (see index.css):
+// third-party sign-in marks must stay instantly recognizable as themselves.
 function GoogleGlyph() {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="shrink-0">
-      <path
-        d="M21.6 12.23c0-.71-.06-1.39-.18-2.05H12v3.88h5.4a4.62 4.62 0 0 1-2 3.03v2.5h3.24c1.9-1.75 3-4.32 3-7.36Z"
-        fill="currentColor"
-        opacity=".9"
-      />
-      <path
-        d="M12 22c2.7 0 4.97-.9 6.63-2.42l-3.24-2.5c-.9.6-2.05.96-3.4.96-2.6 0-4.8-1.76-5.6-4.12H3.06v2.59A10 10 0 0 0 12 22Z"
-        fill="currentColor"
-        opacity=".7"
-      />
-      <path
-        d="M6.4 13.92a5.98 5.98 0 0 1 0-3.84V7.5H3.06a10 10 0 0 0 0 9l3.34-2.58Z"
-        fill="currentColor"
-        opacity=".5"
-      />
-      <path
-        d="M12 5.98c1.47 0 2.79.5 3.82 1.5l2.87-2.87A9.96 9.96 0 0 0 12 2a10 10 0 0 0-8.94 5.5l3.34 2.58c.8-2.36 3-4.1 5.6-4.1Z"
-        fill="currentColor"
-        opacity=".8"
-      />
+    <svg width="17" height="17" viewBox="0 0 18 18" className="shrink-0">
+      <path fill="#4285F4" d="M17.64 9.2045c0-.6381-.0573-1.2518-.1636-1.8409H9v3.4814h4.8436c-.2086 1.125-.8427 2.0782-1.7959 2.7164v2.2582h2.9087c1.7018-1.5668 2.6836-3.8749 2.6836-6.6151Z" />
+      <path fill="#34A853" d="M9 18c2.43 0 4.4673-.8059 5.9564-2.1805l-2.9087-2.2582c-.8059.54-1.8368.8591-3.0477.8591-2.3427 0-4.3282-1.5818-5.0364-3.7104H.9573v2.3318C2.4382 15.9832 5.4818 18 9 18Z" />
+      <path fill="#FBBC05" d="M3.9636 10.71c-.18-.54-.2822-1.1168-.2822-1.71s.1023-1.17.2822-1.71V4.9582H.9573C.3477 6.1732 0 7.5477 0 9s.3477 2.8268.9573 4.0418L3.9636 10.71Z" />
+      <path fill="#EA4335" d="M9 3.5795c1.3214 0 2.5077.4541 3.4405 1.346l2.5813-2.5814C13.4632.8918 11.426 0 9 0 5.4818 0 2.4382 2.0168.9573 4.9582L3.9636 7.29C4.6718 5.1618 6.6573 3.5795 9 3.5795Z" />
     </svg>
   )
 }
 
+// A crisper, more accurate Apple glyph than the previous one — still plain
+// `currentColor`, per Apple's own Sign in with Apple HIG: the mark should
+// adapt to the surrounding UI's color, not carry a fixed brand color.
 function AppleGlyph() {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="shrink-0">
-      <path d="M16.36 1.5c.1 1.1-.32 2.16-1 2.95-.68.79-1.8 1.4-2.9 1.3-.12-1.06.36-2.15 1.02-2.9.68-.78 1.85-1.36 2.88-1.35ZM19.9 17.16c-.36.83-.79 1.6-1.3 2.32-.7.99-1.28 1.68-1.73 2.06-.7.65-1.44.98-2.24 1-.57.01-1.26-.16-2.06-.51-.8-.35-1.53-.51-2.2-.51-.7 0-1.45.16-2.26.51-.81.35-1.46.53-1.96.55-.77.03-1.53-.31-2.26-1.02-.48-.44-1.1-1.17-1.85-2.2-.8-1.1-1.46-2.38-1.98-3.83-.55-1.56-.83-3.07-.83-4.53 0-1.67.36-3.11 1.08-4.32a6.36 6.36 0 0 1 2.26-2.3 6.1 6.1 0 0 1 3.06-.87c.63 0 1.46.2 2.5.58 1.04.39 1.7.58 2 .58.22 0 .96-.22 2.19-.67 1.16-.41 2.14-.58 2.94-.51 2.18.18 3.82 1.03 4.9 2.58-1.95 1.18-2.92 2.83-2.9 4.94.02 1.65.61 3.02 1.77 4.11.53.5 1.12.89 1.77 1.16-.14.42-.3.82-.46 1.2Z" />
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" className="shrink-0">
+      <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.36.07 2.31.75 3.09.81 1.18-.24 2.31-.94 3.57-.85 1.5.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.08ZM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25Z" />
     </svg>
   )
 }
@@ -93,7 +85,7 @@ export default function OAuthButtons({ showGithub = false }) {
           disabled={!!loadingProvider}
           className="mt-2.5 w-full"
         >
-          {loadingProvider === 'github' ? <LoaderCircle size={16} className="animate-spin" /> : <span className="font-mono text-xs">gh</span>}
+          {loadingProvider === 'github' ? <LoaderCircle size={16} className="animate-spin" /> : <Github size={16} className="shrink-0" />}
           Continue with GitHub
         </GlassButton>
       )}

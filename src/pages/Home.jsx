@@ -1,15 +1,20 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { motion } from 'framer-motion'
+import { motion, useScroll, useTransform } from 'framer-motion'
 import { Code2, GitCompareArrows, History, Layers, ListChecks, Sparkles } from 'lucide-react'
 import SearchBar from '../components/SearchBar'
 import Reveal, { revealItem } from '../components/Reveal'
+import Spotlight from '../components/Spotlight'
+import CreatorCard from '../components/CreatorCard'
 import { slugify, getHistory } from '../utils/helpers'
 import { TOPIC_CATALOG } from '../utils/constants'
 import { useAuth } from '../hooks/useAuth'
 
+// `big: true` entries take the wide slot in the bento grid below — the
+// pattern Apple's product pages use to give one feature visual priority
+// instead of a uniform, monotonous card grid.
 const FEATURES = [
-  { icon: Sparkles, title: 'Natural-language search', text: 'Ask in plain English — "Explain pointers in Java" — no rigid syntax required.' },
+  { icon: Sparkles, title: 'Natural-language search', text: 'Ask in plain English — "Explain pointers in Java" — no rigid syntax required. Code Orbit parses the topic and language for you.', big: true },
   { icon: GitCompareArrows, title: 'Cross-language comparison', text: 'Every topic is compared across Java, C++, Python, JavaScript and more.' },
   { icon: Layers, title: 'Visual explanations', text: 'Arrays, linked lists, trees and graphs rendered as clear diagrams.' },
   { icon: Code2, title: 'Runnable code examples', text: 'Copy, expand, switch languages, and run snippets in an interactive playground.' },
@@ -20,6 +25,13 @@ export default function Home() {
   const navigate = useNavigate()
   const { user } = useAuth()
   const [history, setHistory] = useState([])
+  const heroRef = useRef(null)
+
+  const { scrollY } = useScroll()
+  // Apple-product-page-style parallax: the orbit ring drifts and fades as
+  // you scroll past the hero, instead of just sitting there static.
+  const ringY = useTransform(scrollY, [0, 500], [0, 120])
+  const ringOpacity = useTransform(scrollY, [0, 400], [0.7, 0])
 
   useEffect(() => setHistory(getHistory(user?.id)), [user?.id])
 
@@ -29,9 +41,13 @@ export default function Home() {
 
   return (
     <div>
-      <section className="relative overflow-hidden px-4 pb-20 pt-20 sm:pt-28">
+      <section ref={heroRef} className="relative overflow-hidden px-4 pb-20 pt-20 sm:pt-28">
         <div className="dot-grid pointer-events-none absolute inset-0 -z-10 [mask-image:radial-gradient(60%_55%_at_50%_15%,black,transparent)]" />
-        <div className="orbit-ring pointer-events-none absolute left-1/2 top-8 -z-10 h-[420px] w-[420px] -translate-x-1/2 animate-orbitSpinSlow opacity-70" />
+        <Spotlight />
+        <motion.div
+          style={{ y: ringY, opacity: ringOpacity }}
+          className="orbit-ring pointer-events-none absolute left-1/2 top-8 -z-10 h-[420px] w-[420px] -translate-x-1/2 animate-orbitSpinSlow"
+        />
 
         <div className="mx-auto max-w-3xl text-center">
           <motion.span
@@ -83,14 +99,21 @@ export default function Home() {
       )}
 
       <Reveal as="section" stagger={0.08} className="mx-auto max-w-6xl px-4 pb-20">
+        {/* Bento grid: one feature takes the wide slot for visual priority,
+            instead of every card fighting for equal attention. */}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {FEATURES.map((f) => (
-            <motion.div key={f.title} variants={revealItem} className="card card-hover p-5">
-              <span className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-600 dark:border-surface-border dark:text-slate-300">
-                <f.icon size={17} />
+            <motion.div
+              key={f.title}
+              variants={revealItem}
+              whileHover={{ y: -3 }}
+              className={`card card-hover p-6 ${f.big ? 'sm:col-span-2 lg:col-span-2 lg:row-span-1' : ''}`}
+            >
+              <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 text-slate-600 dark:border-surface-border dark:text-slate-300">
+                <f.icon size={18} />
               </span>
-              <h3 className="mt-3 font-semibold text-slate-900 dark:text-white">{f.title}</h3>
-              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{f.text}</p>
+              <h3 className={`mt-4 font-semibold text-slate-900 dark:text-white ${f.big ? 'text-lg' : ''}`}>{f.title}</h3>
+              <p className={`mt-1.5 text-sm text-slate-500 dark:text-slate-400 ${f.big ? 'max-w-md' : ''}`}>{f.text}</p>
             </motion.div>
           ))}
         </div>
@@ -116,6 +139,13 @@ export default function Home() {
             </div>
           ))}
         </div>
+      </Reveal>
+
+      <Reveal as="section" className="mx-auto max-w-4xl px-4 pb-24">
+        <p className="mb-4 text-center text-sm font-medium uppercase tracking-wider text-slate-400">
+          Designed &amp; engineered solo
+        </p>
+        <CreatorCard className="mx-auto max-w-md" />
       </Reveal>
     </div>
   )
