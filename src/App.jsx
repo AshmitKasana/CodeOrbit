@@ -7,7 +7,6 @@ import Footer from './components/Footer'
 import CommandPalette from './components/CommandPalette'
 import ProtectedRoute from './components/ProtectedRoute'
 import PageFade from './components/PageFade'
-import SplashScreen from './components/SplashScreen'
 import OrbitMark from './components/OrbitMark'
 import Home from './pages/Home'
 import { getStoredTheme, setStoredTheme } from './utils/helpers'
@@ -78,7 +77,6 @@ export default function App() {
   return (
     <AuthProvider>
       <div className="flex min-h-screen flex-col bg-white dark:bg-surface">
-        <SplashScreen />
         <Header theme={theme} onToggleTheme={toggleTheme} onOpenSearch={() => setPaletteOpen(true)} />
         <main className="flex-1">
           <Suspense fallback={<RouteFallback />}>
