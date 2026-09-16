@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { generateExplanation, askFollowUp as askFollowUpService, LOADING_STAGES } from '../services/aiService'
 import { addToHistory } from '../utils/helpers'
+import { useAuth } from './useAuth'
 
 /**
  * Drives the AI generation lifecycle for a single learning query: staged
@@ -8,6 +9,7 @@ import { addToHistory } from '../utils/helpers'
  * retry, and a follow-up conversation thread scoped to the current topic.
  */
 export function useTopic(rawQuery, level) {
+  const { user } = useAuth()
   const [status, setStatus] = useState('idle') // idle | loading | success | error
   const [stageIndex, setStageIndex] = useState(0)
   const [result, setResult] = useState(null)
@@ -32,12 +34,12 @@ export function useTopic(rawQuery, level) {
       cache.current.set(cacheKey, data)
       setResult(data)
       setStatus('success')
-      addToHistory({ slug: data.slug, title: data.title, query: rawQuery, language: data.language })
+      addToHistory({ slug: data.slug, title: data.title, query: rawQuery, language: data.language }, user?.id)
     } catch (err) {
       setError(err)
       setStatus('error')
     }
-  }, [rawQuery, level])
+  }, [rawQuery, level, user?.id])
 
   useEffect(() => {
     run()

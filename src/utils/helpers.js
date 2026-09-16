@@ -93,51 +93,65 @@ const BOOKMARKS_KEY = 'dsa-ai:bookmarks'
 const PROGRESS_KEY = 'dsa-ai:roadmap-progress'
 const THEME_KEY = 'dsa-ai:theme'
 
-export function getHistory() {
-  return readList(HISTORY_KEY)
+/**
+ * All of history/bookmarks/roadmap-progress are namespaced per signed-in
+ * user (via their Supabase id) so accounts don't share data on a shared
+ * device, while a signed-out visitor keeps using the original unscoped key
+ * — no behavior change for existing guest usage, and no backend required
+ * (per the spec: "use localStorage with a clean abstraction" when a real
+ * database table isn't configured).
+ */
+function scopedKey(base, userId) {
+  return userId ? `${base}:${userId}` : base
 }
 
-export function addToHistory(entry) {
-  const list = readList(HISTORY_KEY).filter((e) => e.slug !== entry.slug)
+export function getHistory(userId) {
+  return readList(scopedKey(HISTORY_KEY, userId))
+}
+
+export function addToHistory(entry, userId) {
+  const key = scopedKey(HISTORY_KEY, userId)
+  const list = readList(key).filter((e) => e.slug !== entry.slug)
   list.unshift({ ...entry, timestamp: Date.now() })
-  writeList(HISTORY_KEY, list.slice(0, 20))
+  writeList(key, list.slice(0, 20))
   return list
 }
 
-export function clearHistory() {
-  writeList(HISTORY_KEY, [])
+export function clearHistory(userId) {
+  writeList(scopedKey(HISTORY_KEY, userId), [])
 }
 
-export function getBookmarks() {
-  return readList(BOOKMARKS_KEY)
+export function getBookmarks(userId) {
+  return readList(scopedKey(BOOKMARKS_KEY, userId))
 }
 
-export function isBookmarked(slug) {
-  return getBookmarks().some((b) => b.slug === slug)
+export function isBookmarked(slug, userId) {
+  return getBookmarks(userId).some((b) => b.slug === slug)
 }
 
-export function toggleBookmark(entry) {
-  const list = getBookmarks()
+export function toggleBookmark(entry, userId) {
+  const key = scopedKey(BOOKMARKS_KEY, userId)
+  const list = readList(key)
   const exists = list.some((b) => b.slug === entry.slug)
   const next = exists ? list.filter((b) => b.slug !== entry.slug) : [{ ...entry, timestamp: Date.now() }, ...list]
-  writeList(BOOKMARKS_KEY, next)
+  writeList(key, next)
   return next
 }
 
-export function getRoadmapProgress() {
+export function getRoadmapProgress(userId) {
   try {
-    const raw = localStorage.getItem(PROGRESS_KEY)
+    const raw = localStorage.getItem(scopedKey(PROGRESS_KEY, userId))
     return raw ? JSON.parse(raw) : {}
   } catch {
     return {}
   }
 }
 
-export function setRoadmapStatus(id, status) {
-  const progress = getRoadmapProgress()
+export function setRoadmapStatus(id, status, userId) {
+  const progress = getRoadmapProgress(userId)
   progress[id] = status
   try {
-    localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress))
+    localStorage.setItem(scopedKey(PROGRESS_KEY, userId), JSON.stringify(progress))
   } catch {
     /* ignore */
   }

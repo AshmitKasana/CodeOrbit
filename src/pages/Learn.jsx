@@ -24,12 +24,14 @@ import CodePlayground from '../components/CodePlayground'
 import FollowUpChat from '../components/FollowUpChat'
 
 import { useTopic } from '../hooks/useTopic'
+import { useAuth } from '../hooks/useAuth'
 import { unslugify, isBookmarked, toggleBookmark } from '../utils/helpers'
 
 export default function Learn() {
   const { topic: slug } = useParams()
   const location = useLocation()
   const rawQuery = location.state?.rawQuery || unslugify(slug)
+  const { user } = useAuth()
 
   const [level, setLevel] = useState('Beginner')
   const { status, stageIndex, result, error, retry, conversation, askFollowUp, followUpLoading } = useTopic(rawQuery, level)
@@ -42,17 +44,17 @@ export default function Learn() {
 
   useEffect(() => {
     if (result) {
-      setBookmarked(isBookmarked(result.slug))
+      setBookmarked(isBookmarked(result.slug, user?.id))
       setExampleLang(result.examples?.[0]?.language || null)
     }
-  }, [result])
+  }, [result, user?.id])
 
   const exampleLanguages = useMemo(() => [...new Set((result?.examples || []).map((e) => e.language))], [result])
   const activeExamples = useMemo(() => (result?.examples || []).filter((e) => e.language === exampleLang), [result, exampleLang])
 
   function handleBookmark() {
     if (!result) return
-    toggleBookmark({ slug: result.slug, title: result.title, language: result.language })
+    toggleBookmark({ slug: result.slug, title: result.title, language: result.language }, user?.id)
     setBookmarked((b) => !b)
   }
 

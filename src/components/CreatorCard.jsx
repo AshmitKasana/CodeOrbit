@@ -13,7 +13,10 @@ export default function CreatorCard({ className = '' }) {
       </span>
       <div>
         <p className="font-display text-lg font-semibold text-slate-900 dark:text-white">Ashmit Kasana</p>
-        <p className="text-sm font-medium uppercase tracking-wide text-signal">Owner &amp; Creator</p>
+        <p className="flex items-center gap-1.5 text-sm font-medium uppercase tracking-wide text-signal">
+          <span className="h-1.5 w-1.5 shrink-0 animate-pulseSoft rounded-full bg-signal" aria-hidden="true" />
+          Owner &amp; Creator
+        </p>
       </div>
     </GlassCard>
   )

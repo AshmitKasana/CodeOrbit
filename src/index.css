@@ -37,6 +37,20 @@ html.dark body {
   background: rgb(var(--accent) / 0.25);
 }
 
+/* Respect the OS-level "reduce motion" setting for plain CSS animations
+   (orbit spins, float, pulse) app-wide. Framer Motion's own animations are
+   handled separately via <MotionConfig reducedMotion="user"> in main.jsx. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 /* Scrollbars */
 * {
   scrollbar-width: thin;
