@@ -1,0 +1,184 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+  /* Light mode: accent is near-black, accent-fg is the color placed ON it (white). */
+  --accent: 15 15 17;
+  --accent-fg: 255 255 255;
+}
+
+html.light {
+  color-scheme: light;
+  --accent: 15 15 17;
+  --accent-fg: 255 255 255;
+}
+
+html.dark {
+  color-scheme: dark;
+  /* Dark mode: accent flips to near-white, accent-fg flips to near-black. */
+  --accent: 245 245 247;
+  --accent-fg: 10 10 11;
+}
+
+body {
+  @apply bg-white text-slate-800 antialiased;
+  font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  font-feature-settings: 'cv11', 'ss01';
+  -webkit-font-smoothing: antialiased;
+}
+
+html.dark body {
+  @apply bg-surface text-slate-300;
+}
+
+::selection {
+  background: rgb(var(--accent) / 0.25);
+}
+
+/* Scrollbars */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #3a3a40 transparent;
+}
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-thumb {
+  background: #3a3a40;
+  border-radius: 999px;
+}
+html.light *::-webkit-scrollbar-thumb {
+  background: #d7d7db;
+}
+
+/*
+ * Custom classes below are declared in Tailwind's "components" layer so they
+ * sit BEFORE the "utilities" layer in the generated stylesheet. That keeps
+ * utilities like `hidden` / `sm:flex` able to override them (equal
+ * specificity, later wins) — without @layer, plain CSS placed after
+ * `@tailwind utilities` in this file would win over utility classes purely
+ * by source order, breaking things like responsive hide/show.
+ */
+@layer components {
+  .glass {
+    @apply bg-white/70 dark:bg-white/[0.04] backdrop-blur-md;
+  }
+
+  /*
+   * Liquid Glass — the translucent-surface language used for the navbar,
+   * search, dropdowns, modals, and other floating/important controls.
+   * Deliberately NOT used for documentation content (code blocks, practice
+   * cards, tables, etc.) — those stay solid and high-contrast for reading.
+   */
+  .glass-surface {
+    @apply relative border border-black/10 bg-white/60 backdrop-blur-xl backdrop-saturate-150 shadow-glass dark:border-white/10 dark:bg-white/[0.06];
+  }
+
+  .glass-panel {
+    @apply glass-surface rounded-2xl;
+  }
+
+  .glass-interactive {
+    @apply transition duration-200 ease-out hover:border-black/20 hover:bg-white/70 active:scale-[0.98] dark:hover:border-white/20 dark:hover:bg-white/[0.09];
+  }
+
+  .card {
+    @apply rounded-2xl border border-slate-200 bg-white transition-colors dark:border-surface-border dark:bg-surface-card;
+  }
+
+  .card-hover {
+    @apply transition duration-200 ease-out hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-sm dark:hover:border-white/20;
+  }
+
+  /* Shared button system ---------------------------------------------------- */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-1.5 rounded-xl bg-accent px-4 py-2.5 text-sm font-medium text-accent-fg transition active:scale-[0.98] hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40;
+  }
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-700 transition active:scale-[0.98] hover:border-slate-900/40 dark:border-surface-border dark:text-slate-200 dark:hover:border-white/40;
+  }
+  .icon-btn {
+    @apply flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-600 transition active:scale-95 hover:border-slate-900/40 hover:text-slate-900 dark:border-surface-border dark:text-slate-300 dark:hover:border-white/40 dark:hover:text-white;
+  }
+  .chip {
+    @apply rounded-full border border-slate-200 px-3.5 py-1.5 text-sm text-slate-600 transition active:scale-[0.97] hover:border-slate-900/40 hover:text-slate-900 dark:border-surface-border dark:text-slate-400 dark:hover:border-white/40 dark:hover:text-white;
+  }
+
+  .focus-ring {
+    @apply outline-none ring-0 focus-visible:ring-2 focus-visible:ring-accent/40 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-surface;
+  }
+
+  /* Orbit visual motif ------------------------------------------------------- */
+  .dot-grid {
+    background-image: radial-gradient(currentColor 1px, transparent 1px);
+    background-size: 22px 22px;
+    color: rgb(15 15 17 / 0.06);
+  }
+  html.dark .dot-grid {
+    color: rgb(255 255 255 / 0.06);
+  }
+
+  .orbit-ring {
+    border-radius: 9999px;
+    border: 1px solid rgb(15 15 17 / 0.08);
+  }
+  html.dark .orbit-ring {
+    border-color: rgb(255 255 255 / 0.08);
+  }
+
+  /* Illuminated border used only for the creator card — the single spot in
+     the UI where the signal accent is allowed to be bright. */
+  .signal-border-glow {
+    @apply relative border border-signal/30 shadow-signal;
+  }
+  .signal-border-glow::before {
+    content: '';
+    @apply pointer-events-none absolute -inset-px -z-10 animate-glowPulse rounded-[inherit] opacity-60 blur-md;
+    background: radial-gradient(60% 100% at 50% 0%, rgba(91, 127, 255, 0.35), transparent 70%);
+  }
+
+  .prose-dsa {
+    @apply leading-relaxed text-slate-700 dark:text-slate-300;
+  }
+  .prose-dsa p {
+    @apply mb-3;
+  }
+  .prose-dsa strong {
+    @apply text-slate-900 dark:text-white font-semibold;
+  }
+  .prose-dsa code {
+    @apply rounded bg-slate-100 px-1.5 py-0.5 font-mono text-[0.85em] text-slate-800 dark:bg-white/10 dark:text-slate-100;
+  }
+  .prose-dsa ul {
+    @apply mb-3 ml-5 list-disc space-y-1;
+  }
+  .prose-dsa ol {
+    @apply mb-3 ml-5 list-decimal space-y-1;
+  }
+  .prose-dsa a {
+    @apply text-slate-900 underline decoration-slate-400 underline-offset-2 dark:text-white dark:decoration-slate-600;
+  }
+  .prose-dsa table {
+    @apply w-full border-collapse text-sm;
+  }
+  .prose-dsa th,
+  .prose-dsa td {
+    @apply border border-slate-200 px-3 py-2 text-left dark:border-surface-border;
+  }
+  .prose-dsa th {
+    @apply bg-slate-50 dark:bg-white/5;
+  }
+
+  .skeleton {
+    background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 37%, rgba(255,255,255,0.03) 63%);
+    background-size: 800px 100%;
+    @apply animate-shimmer;
+  }
+  html.light .skeleton {
+    background: linear-gradient(90deg, rgba(0,0,0,0.04) 25%, rgba(0,0,0,0.08) 37%, rgba(0,0,0,0.04) 63%);
+    background-size: 800px 100%;
+  }
+}
