@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { motion, useScroll, useTransform } from 'framer-motion'
-import { Code2, GitCompareArrows, History, Layers, ListChecks, Sparkles } from 'lucide-react'
+import { ArrowRight, Code2, GitCompareArrows, History, Layers, ListChecks, Sparkles } from 'lucide-react'
 import SearchBar from '../components/SearchBar'
 import Reveal, { revealItem } from '../components/Reveal'
 import Spotlight from '../components/Spotlight'
@@ -20,6 +20,9 @@ const FEATURES = [
   { icon: Code2, title: 'Runnable code examples', text: 'Copy, expand, switch languages, and run snippets in an interactive playground.' },
   { icon: ListChecks, title: 'Practice & interview prep', text: 'Auto-generated easy/medium/hard problems plus common interview questions.' },
 ]
+
+// Static bar heights for the little "sorting" preview on the Visualizer card.
+const PREVIEW_BARS = [40, 72, 28, 90, 55, 18, 80, 46, 64, 32, 86, 22]
 
 export default function Home() {
   const navigate = useNavigate()
@@ -116,6 +119,50 @@ export default function Home() {
               <p className={`mt-1.5 text-sm text-slate-500 dark:text-slate-400 ${f.big ? 'max-w-md' : ''}`}>{f.text}</p>
             </motion.div>
           ))}
+        </div>
+      </Reveal>
+
+      <Reveal as="section" className="mx-auto max-w-6xl px-4 pb-20">
+        <p className="text-xs font-semibold uppercase tracking-wider text-signal">Interactive labs</p>
+        <h2 className="mb-6 mt-1 font-display text-2xl font-bold text-slate-900 dark:text-white">Don&apos;t just read it — watch it run.</h2>
+        <div className="grid gap-4 md:grid-cols-2">
+          <Link to="/visualizer" className="card card-hover group p-6">
+            <div className="mb-5 flex h-24 items-end gap-1" aria-hidden="true">
+              {PREVIEW_BARS.map((h, i) => (
+                <span
+                  key={i}
+                  className="flex-1 rounded-t bg-slate-200 transition-colors duration-300 group-hover:bg-signal/70 dark:bg-white/10 dark:group-hover:bg-signal/70"
+                  style={{ height: `${h}%`, transitionDelay: `${i * 25}ms` }}
+                />
+              ))}
+            </div>
+            <h3 className="font-semibold text-slate-900 dark:text-white">Algorithm Visualizer</h3>
+            <p className="mt-1.5 text-sm text-slate-500 dark:text-slate-400">
+              Step through bubble, merge, quick and heap sort — or race two algorithms on the same data. Pause, rewind and see exactly why
+              O(n log n) beats O(n²).
+            </p>
+            <span className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-slate-900 dark:text-white">
+              Open the lab <ArrowRight size={14} className="transition group-hover:translate-x-0.5" />
+            </span>
+          </Link>
+
+          <Link to="/complexity" className="card card-hover group p-6">
+            <svg viewBox="0 0 200 96" className="mb-5 h-24 w-full" fill="none" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
+              <path d="M4,88 L196,86" stroke="#10b981" />
+              <path d="M4,86 C50,50 110,42 196,38" stroke="#14b8a6" />
+              <path d="M4,88 L196,44" stroke="#5b7fff" />
+              <path d="M4,88 C90,80 150,50 196,8" stroke="#f59e0b" />
+              <path d="M4,88 C120,84 165,60 196,4" stroke="#ef4444" className="transition-all duration-500 group-hover:opacity-60" />
+            </svg>
+            <h3 className="font-semibold text-slate-900 dark:text-white">Big-O Explorer</h3>
+            <p className="mt-1.5 text-sm text-slate-500 dark:text-slate-400">
+              Drag a slider and watch O(1) to O(n!) diverge. See how long each would really take on a billion-operations-per-second
+              machine, plus the data-structure cheat sheet interviewers expect.
+            </p>
+            <span className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-slate-900 dark:text-white">
+              Explore complexity <ArrowRight size={14} className="transition group-hover:translate-x-0.5" />
+            </span>
+          </Link>
         </div>
       </Reveal>
 

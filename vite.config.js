@@ -3,6 +3,13 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
+  // Unit tests (npm test). Frontend tests run in jsdom (for localStorage);
+  // server tests opt out with a `// @vitest-environment node` docblock.
+  test: {
+    environment: 'jsdom',
+    include: ['src/**/*.test.{js,jsx}', 'server/**/*.test.js'],
+    restoreMocks: true,
+  },
   server: {
     port: 5173,
     proxy: {

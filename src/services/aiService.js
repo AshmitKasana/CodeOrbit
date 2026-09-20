@@ -1,6 +1,8 @@
 import { parseQuery, slugify } from '../utils/helpers'
 import { findEntry, buildGenericPractice } from './knowledgeBase'
 import { LANGUAGES } from '../utils/constants'
+import { supabase, isSupabaseConfigured } from '../lib/supabase'
+import { setQuota } from './quotaStore'
 
 // ---------------------------------------------------------------------------
 // aiService.js — the ONLY place the rest of the app talks to "AI".
@@ -27,7 +29,15 @@ import { LANGUAGES } from '../utils/constants'
 // }
 // ---------------------------------------------------------------------------
 
-const USE_REAL_AI = import.meta.env.VITE_USE_REAL_AI === 'true'
+// Read at call time (not module load) so it can be toggled in tests.
+const useRealAI = () => import.meta.env.VITE_USE_REAL_AI === 'true'
+// Base URL of the backend. Empty = same origin (Vite proxies /api in dev).
+const apiBase = () => (import.meta.env.VITE_API_URL || '').replace(/\/$/, '')
+
+// Errors the learner needs to see (limit reached, off-topic, bad input).
+// Anything else — backend down, not configured, timeout — silently falls back
+// to the local generator so the app keeps working.
+const SURFACED_ERROR_CODES = new Set(['QUOTA_EXCEEDED', 'OFF_TOPIC', 'REFUSED', 'BAD_REQUEST'])
 
 export const LOADING_STAGES = [
   'Understanding your question...',
@@ -42,30 +52,64 @@ function delay(ms) {
 }
 
 /**
- * Main entry point used by useTopic(). `onStage(index)` is called as the
- * (simulated) generation pipeline progresses, driving the staged loading UI.
+ * Main entry point used by useTopic(), Practice and Interview.
+ * `onStage(index)` drives the staged loading UI. `options.focus` is
+ * 'lesson' (default) | 'practice' | 'interview' and tells the backend which
+ * part of the lesson to emphasise.
  */
-export async function generateExplanation(rawQuery, level = 'Beginner', onStage = () => {}) {
+export async function generateExplanation(rawQuery, level = 'Beginner', onStage = () => {}, options = {}) {
   if (!rawQuery || !rawQuery.trim()) {
     throw new AIServiceError('EMPTY_INPUT', 'Please enter a topic to learn about.')
   }
 
-  if (USE_REAL_AI) {
+  if (useRealAI()) {
     try {
-      return await callBackend(rawQuery, level, onStage)
+      return await callBackend(rawQuery, level, onStage, options)
     } catch (err) {
-      console.error('Real AI backend failed, falling back to local generator:', err)
-      // fall through to mock so the demo never hard-fails
+      if (err instanceof AIServiceError && SURFACED_ERROR_CODES.has(err.code)) throw err
+      console.warn('AI backend unavailable, using the local generator instead:', err?.message || err)
+      // fall through to the local generator so the app never hard-fails
     }
   }
 
   return mockGenerate(rawQuery, level, onStage)
 }
 
+/** Asks the backend how much of today's quota is left (no quota is consumed). */
+export async function refreshQuota() {
+  if (!useRealAI()) return null
+  try {
+    const res = await fetch(`${apiBase()}/api/quota`, { headers: await authHeaders() })
+    if (!res.ok) return null
+    const body = await res.json()
+    setQuota('generate', body.generate, { signedIn: body.signedIn })
+    setQuota('chat', body.chat)
+    return body
+  } catch {
+    return null
+  }
+}
+
 export async function askFollowUp(topicResult, question, conversationHistory = []) {
   if (!question || !question.trim()) {
     throw new AIServiceError('EMPTY_INPUT', 'Please enter a follow-up question.')
   }
+
+  if (useRealAI()) {
+    try {
+      return await followUpFromBackend(topicResult, question, conversationHistory)
+    } catch (err) {
+      if (err instanceof AIServiceError && SURFACED_ERROR_CODES.has(err.code)) throw err
+      console.warn('AI backend unavailable, using a canned follow-up answer instead:', err?.message || err)
+    }
+  }
+
+  return cannedFollowUp(topicResult, question)
+}
+
+// Offline follow-up answers (used when no AI backend is configured/reachable).
+async function cannedFollowUp(topicResult, question) {
+  const level = topicResult?.difficulty
   await delay(600 + Math.random() * 500)
 
   const q = question.toLowerCase()
@@ -100,33 +144,80 @@ export async function askFollowUp(topicResult, question, conversationHistory = [
 // Real backend call — never touches an API key directly. The key lives only
 // in server/index.js (or whatever backend you deploy), read from env vars.
 // ---------------------------------------------------------------------------
-async function callBackend(rawQuery, level, onStage) {
-  onStage(0)
-  const controller = new AbortController()
-  const timeout = setTimeout(() => controller.abort(), 30000)
+const REQUEST_TIMEOUT_MS = 120_000 // a full lesson can take a while to generate
+
+/** Sends the signed-in user's Supabase token so the server can give them the higher quota. */
+async function authHeaders() {
+  if (!isSupabaseConfigured || !supabase) return {}
   try {
-    const res = await fetch('/api/generate', {
+    const { data } = await supabase.auth.getSession()
+    const token = data?.session?.access_token
+    return token ? { Authorization: `Bearer ${token}` } : {}
+  } catch {
+    return {}
+  }
+}
+
+async function postJson(path, payload) {
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS)
+  try {
+    const res = await fetch(`${apiBase()}${path}`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ query: rawQuery, level }),
+      headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
+      body: JSON.stringify(payload),
       signal: controller.signal,
     })
-    onStage(2)
-    if (!res.ok) {
-      if (res.status === 429) throw new AIServiceError('RATE_LIMIT', 'Too many requests — please wait a moment and try again.')
-      throw new AIServiceError('API_ERROR', `Backend returned status ${res.status}.`)
-    }
-    const data = await res.json()
-    onStage(3)
-    const validated = validateSchema(data)
-    if (!validated.ok) throw new AIServiceError('INVALID_RESPONSE', 'The AI response was malformed.')
-    return finalizeResult(data, rawQuery, level)
+    const body = await res.json().catch(() => null)
+    if (!res.ok) throw errorFromResponse(res.status, body)
+    return body
   } catch (err) {
-    if (err.name === 'AbortError') throw new AIServiceError('TIMEOUT', 'The request took too long. Please try again.')
+    if (err?.name === 'AbortError') throw new AIServiceError('TIMEOUT', 'The request took too long. Please try again.')
     throw err
   } finally {
     clearTimeout(timeout)
   }
+}
+
+function errorFromResponse(status, body) {
+  const code = body?.code
+  const message = body?.error
+  if (code === 'QUOTA_EXCEEDED') {
+    const error = new AIServiceError('QUOTA_EXCEEDED', message || "You've reached today's AI limit.")
+    error.quota = body.quota
+    error.signedIn = Boolean(body.signedIn)
+    return error
+  }
+  if (code === 'OFF_TOPIC' || code === 'REFUSED' || code === 'BAD_REQUEST') return new AIServiceError(code, message)
+  if (code === 'RATE_LIMITED' || status === 429) {
+    return new AIServiceError('RATE_LIMIT', message || 'Too many requests — please wait a moment and try again.')
+  }
+  if (code === 'AI_NOT_CONFIGURED') return new AIServiceError('AI_NOT_CONFIGURED', message)
+  return new AIServiceError('API_ERROR', message || `Backend returned status ${status}.`)
+}
+
+async function callBackend(rawQuery, level, onStage, { focus = 'lesson' } = {}) {
+  onStage(0)
+  const body = await postJson('/api/generate', { query: rawQuery, level, focus })
+  onStage(2)
+  const validated = validateSchema(body?.lesson)
+  if (!validated.ok) throw new AIServiceError('INVALID_RESPONSE', 'The AI response was malformed.')
+  onStage(3)
+  if (body.quota) setQuota('generate', body.quota)
+  return finalizeResult(body.lesson, rawQuery, level)
+}
+
+async function followUpFromBackend(topicResult, question, conversationHistory) {
+  const body = await postJson('/api/followup', {
+    topic: topicResult?.title || 'this topic',
+    summary: topicResult?.summary || '',
+    level: topicResult?.difficulty,
+    question,
+    history: conversationHistory.map((m) => ({ role: m.role, text: m.text })),
+  })
+  if (body.quota) setQuota('chat', body.quota)
+  if (typeof body.answer !== 'string' || !body.answer) throw new AIServiceError('INVALID_RESPONSE', 'The AI answer was malformed.')
+  return body.answer
 }
 
 export class AIServiceError extends Error {
@@ -151,6 +242,7 @@ function finalizeResult(data, rawQuery, level) {
     slug: data.slug || slugify(data.title || rawQuery),
     difficulty: level,
     rawQuery,
+    source: 'ai',
   }
 }
 
@@ -189,6 +281,7 @@ async function mockGenerate(rawQuery, level, onStage) {
     difficulty: level,
     rawQuery,
     languageNote,
+    source: 'local',
   }
   delete result.languageNote_
   return result

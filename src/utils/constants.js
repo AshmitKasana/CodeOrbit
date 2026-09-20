@@ -86,49 +86,6 @@ export const ROADMAP = [
   { id: 'advanced', label: 'Advanced Algorithms', topic: "Dijkstra's Algorithm" },
 ]
 
-// --- Billing / plans --------------------------------------------------------
-
-// How many AI-generated explanations a Free-plan visitor gets per day
-// (tracked in localStorage, see getUsageToday/incrementUsageToday in
-// helpers.js). Pro accounts bypass this entirely — see useSubscription.js.
-export const FREE_DAILY_GENERATION_LIMIT = 5
-
-// Placeholder pricing — change these to whatever you actually want to
-// charge. `priceId` must match a real Price object in your Stripe
-// dashboard (see BILLING_SETUP.md) for the "Upgrade" button to work.
-export const PRICING_PLANS = [
-  {
-    id: 'free',
-    name: 'Free',
-    tagline: 'Everything you need to start learning DSA.',
-    price: { monthly: 0, yearly: 0 },
-    priceId: { monthly: null, yearly: null },
-    features: [
-      `${FREE_DAILY_GENERATION_LIMIT} AI-generated explanations per day`,
-      'Full topic explorer, roadmap & practice problems',
-      'Interview prep questions',
-      'Bookmarks & search history',
-    ],
-  },
-  {
-    id: 'pro',
-    name: 'Pro',
-    tagline: 'For serious interview prep — no limits.',
-    price: { monthly: 9, yearly: 79 },
-    priceId: {
-      monthly: import.meta.env.VITE_STRIPE_PRICE_ID_MONTHLY || null,
-      yearly: import.meta.env.VITE_STRIPE_PRICE_ID_YEARLY || null,
-    },
-    features: [
-      'Unlimited AI-generated explanations',
-      'Everything in Free',
-      'Priority support',
-      'Early access to new features',
-    ],
-    highlight: true,
-  },
-]
-
 export const EXAMPLE_QUERIES = [
   'Explain pointers in Java',
   'Binary tree traversal in C++',

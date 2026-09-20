@@ -1,36 +1,37 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowUpRight, Loader2 } from 'lucide-react'
+import { AlertTriangle, ArrowUpRight, Loader2 } from 'lucide-react'
 import SearchBar from '../components/SearchBar'
 import PracticeCard from '../components/PracticeCard'
-import UpgradePrompt from '../components/UpgradePrompt'
+import LimitReached from '../components/LimitReached'
+import QuotaBadge from '../components/QuotaBadge'
 import { generateExplanation } from '../services/aiService'
 import { slugify } from '../utils/helpers'
 import { TOPIC_CATALOG } from '../utils/constants'
-import { useGenerationGate } from '../hooks/useGenerationGate'
+import { useAuth } from '../hooks/useAuth'
 
 const QUICK_TOPICS = ['Arrays', 'Linked List', 'Binary Search', 'Dynamic Programming', 'Graphs', 'Pointers']
 
 export default function Practice() {
   const navigate = useNavigate()
-  const gate = useGenerationGate()
+  const { user } = useAuth()
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState(null)
   const [query, setQuery] = useState(null)
-  const [limitReached, setLimitReached] = useState(false)
+  const [limit, setLimit] = useState(null)
+  const [error, setError] = useState(null)
 
   async function loadTopic(topic) {
-    if (!gate.canGenerate()) {
-      setLimitReached(true)
-      return
-    }
-    setLimitReached(false)
+    setLimit(null)
+    setError(null)
     setLoading(true)
     setQuery(topic)
     try {
-      const data = await generateExplanation(topic, 'Intermediate', () => {})
-      gate.recordGeneration()
+      const data = await generateExplanation(topic, 'Intermediate', () => {}, { focus: 'practice' })
       setResult(data)
+    } catch (err) {
+      if (err?.code === 'QUOTA_EXCEEDED') setLimit({ quota: err.quota, signedIn: err.signedIn })
+      else setError(err?.message || 'Something went wrong generating problems. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -41,8 +42,9 @@ export default function Practice() {
       <div className="mb-8 text-center">
         <h1 className="font-display text-3xl font-bold text-slate-900 dark:text-white sm:text-4xl">Practice Problems</h1>
         <p className="mx-auto mt-3 max-w-lg text-slate-500 dark:text-slate-400">
-          Pick a topic to generate 5 easy, 5 medium, and 5 hard practice problems — hints and solutions hidden by default.
+          Pick a topic to generate easy, medium and hard practice problems — hints and solutions hidden by default.
         </p>
+        <QuotaBadge className="mt-3" />
       </div>
 
       <SearchBar size="sm" onSubmit={loadTopic} />
@@ -69,9 +71,15 @@ export default function Practice() {
         </div>
       )}
 
-      {!loading && limitReached && <UpgradePrompt isSignedIn={gate.isSignedIn} />}
+      {!loading && limit && <LimitReached quota={limit.quota} signedIn={Boolean(user) || limit.signedIn} />}
 
-      {!loading && !limitReached && result && (
+      {!loading && error && (
+        <div className="mt-10 flex items-center justify-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+          <AlertTriangle size={16} /> {error}
+        </div>
+      )}
+
+      {!loading && !limit && !error && result && (
         <div className="mt-10 space-y-8">
           <button
             onClick={() => navigate(`/learn/${slugify(query)}`, { state: { rawQuery: query } })}
@@ -92,7 +100,7 @@ export default function Practice() {
         </div>
       )}
 
-      {!loading && !limitReached && !result && (
+      {!loading && !limit && !error && !result && (
         <div className="mt-10 grid gap-3 sm:grid-cols-3">
           {Object.values(TOPIC_CATALOG).flat().slice(0, 9).map((t) => (
             <button key={t} onClick={() => loadTopic(t)} className="card card-hover px-4 py-3 text-left text-sm font-medium text-slate-700 dark:text-slate-200">

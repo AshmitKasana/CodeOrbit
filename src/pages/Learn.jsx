@@ -22,10 +22,11 @@ import LoadingState from '../components/LoadingState'
 import ErrorState from '../components/ErrorState'
 import CodePlayground from '../components/CodePlayground'
 import FollowUpChat from '../components/FollowUpChat'
-import UpgradePrompt from '../components/UpgradePrompt'
+import LimitReached from '../components/LimitReached'
 
 import { useTopic } from '../hooks/useTopic'
 import { useAuth } from '../hooks/useAuth'
+import { refreshQuota } from '../services/aiService'
 import { unslugify, isBookmarked, toggleBookmark } from '../utils/helpers'
 
 export default function Learn() {
@@ -35,13 +36,18 @@ export default function Learn() {
   const { user } = useAuth()
 
   const [level, setLevel] = useState('Beginner')
-  const { status, stageIndex, result, error, retry, conversation, askFollowUp, followUpLoading } = useTopic(rawQuery, level)
+  const { status, stageIndex, result, error, limit, retry, conversation, askFollowUp, followUpLoading } = useTopic(rawQuery, level)
   const [bookmarked, setBookmarked] = useState(false)
   const [exampleLang, setExampleLang] = useState(null)
 
   useEffect(() => {
     window.scrollTo({ top: 0 })
   }, [slug])
+
+  // Show the "AI lessons left today" badge as soon as the page opens (no quota is consumed).
+  useEffect(() => {
+    refreshQuota()
+  }, [user?.id])
 
   useEffect(() => {
     if (result) {
@@ -61,7 +67,7 @@ export default function Learn() {
 
   if (status === 'loading' || status === 'idle') return <LoadingState stageIndex={stageIndex} />
   if (status === 'error') return <ErrorState error={error} onRetry={retry} />
-  if (status === 'limit') return <UpgradePrompt isSignedIn={Boolean(user)} />
+  if (status === 'limit') return <LimitReached quota={limit?.quota} signedIn={Boolean(user) || Boolean(limit?.signedIn)} />
   if (!result) return null
 
   return (

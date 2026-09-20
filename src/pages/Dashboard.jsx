@@ -1,8 +1,9 @@
 import { useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowRight, Bookmark, BookOpen, Compass, History, ListChecks, Route } from 'lucide-react'
+import { ArrowRight, Award, Bookmark, BookOpen, Compass, Flame, History, ListChecks, Lock, Route } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import { getBookmarks, getHistory, getRoadmapProgress, slugify } from '../utils/helpers'
+import { computeStats, evaluateBadges, getActivity, recentDays } from '../lib/progress'
 import { ROADMAP, TOPIC_CATALOG } from '../utils/constants'
 import Reveal, { revealItem } from '../components/Reveal'
 import { motion } from 'framer-motion'
@@ -15,6 +16,12 @@ export default function Dashboard() {
   const history = useMemo(() => getHistory(user?.id), [user?.id])
   const bookmarks = useMemo(() => getBookmarks(user?.id), [user?.id])
   const progress = useMemo(() => getRoadmapProgress(user?.id), [user?.id])
+
+  const activity = useMemo(() => getActivity(user?.id), [user?.id])
+  const stats = useMemo(() => computeStats(activity, progress), [activity, progress])
+  const badges = useMemo(() => evaluateBadges(stats, ROADMAP.length), [stats])
+  const week = useMemo(() => recentDays(activity, 7), [activity])
+  const earnedCount = badges.filter((b) => b.earned).length
 
   const completed = ROADMAP.filter((step) => progress[step.id] === 'Completed')
   const progressPct = Math.round((completed.length / ROADMAP.length) * 100)
@@ -42,6 +49,64 @@ export default function Dashboard() {
       </Reveal>
 
       <Reveal stagger={0.06} className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <motion.div variants={revealItem} className="card p-5 md:col-span-2 lg:col-span-3">
+          <div className="mb-4 flex items-center gap-2 text-sm font-semibold text-slate-500 dark:text-slate-400">
+            <Flame size={15} /> Your Orbit
+          </div>
+          <div className="grid gap-6 lg:grid-cols-3">
+            <div>
+              <p className="font-display text-4xl font-bold text-slate-900 dark:text-white">
+                {stats.currentStreak}
+                <span className="ml-1.5 text-base font-medium text-slate-400">day streak</span>
+              </p>
+              <p className="mt-1 text-xs text-slate-400">Longest: {stats.longestStreak} {stats.longestStreak === 1 ? 'day' : 'days'} · {stats.activeDays} active {stats.activeDays === 1 ? 'day' : 'days'}</p>
+              <div className="mt-4 flex gap-1.5" aria-label="Activity in the last 7 days">
+                {week.map((d) => (
+                  <div key={d.day} className="flex flex-col items-center gap-1" title={`${d.day}: ${d.total} ${d.total === 1 ? 'action' : 'actions'}`}>
+                    <span className={`h-7 w-7 rounded-lg border ${d.active ? 'border-signal bg-signal/80' : 'border-slate-200 dark:border-surface-border'}`} />
+                    <span className="text-[10px] text-slate-400">{['S', 'M', 'T', 'W', 'T', 'F', 'S'][new Date(`${d.day}T12:00:00Z`).getUTCDay()]}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <p className="text-sm font-medium text-slate-700 dark:text-slate-200">
+                Level {stats.level} <span className="text-slate-400">· {stats.xp} XP</span>
+              </p>
+              <div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-100 dark:bg-white/5">
+                <div className="h-full rounded-full bg-signal transition-all" style={{ width: `${(stats.xpIntoLevel / stats.xpForNext) * 100}%` }} />
+              </div>
+              <p className="mt-1.5 text-xs text-slate-400">{stats.xpForNext - stats.xpIntoLevel} XP to level {stats.level + 1}</p>
+              <p className="mt-3 text-xs text-slate-400">
+                Earn XP by opening lessons (+10), finishing a visualizer run (+5), exploring Big-O (+3) and completing roadmap steps (+25).
+              </p>
+            </div>
+
+            <div>
+              <p className="mb-2 flex items-center gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-200">
+                <Award size={14} /> Badges <span className="text-slate-400">· {earnedCount}/{badges.length}</span>
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {badges.map((b) => (
+                  <span
+                    key={b.id}
+                    title={b.description}
+                    className={`flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-medium ${
+                      b.earned
+                        ? 'border-signal/40 bg-signal/10 text-signal'
+                        : 'border-slate-200 text-slate-400 dark:border-surface-border'
+                    }`}
+                  >
+                    {!b.earned && <Lock size={10} />}
+                    {b.label}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+        </motion.div>
+
         <motion.div variants={revealItem} className="card p-5 lg:col-span-2">
           <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-500 dark:text-slate-400">
             <Compass size={15} /> Continue Learning

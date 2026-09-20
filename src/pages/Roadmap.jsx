@@ -4,6 +4,7 @@ import { motion } from 'framer-motion'
 import { Check, CircleDashed, Loader2 } from 'lucide-react'
 import { ROADMAP } from '../utils/constants'
 import { getRoadmapProgress, setRoadmapStatus, slugify } from '../utils/helpers'
+import { recordActivity } from '../lib/progress'
 import Reveal, { revealItem } from '../components/Reveal'
 import { useAuth } from '../hooks/useAuth'
 
@@ -25,6 +26,7 @@ export default function Roadmap() {
   function cycleStatus(id, current) {
     const next = STATUSES[(STATUSES.indexOf(current) + 1) % STATUSES.length]
     setRoadmapStatus(id, next, user?.id)
+    if (next === 'Completed') recordActivity(user?.id, 'roadmap')
     setProgress((p) => ({ ...p, [id]: next }))
   }
 

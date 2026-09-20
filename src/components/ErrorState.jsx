@@ -7,6 +7,8 @@ const MESSAGES = {
   TIMEOUT: 'The request took too long to respond.',
   INVALID_RESPONSE: 'Code Orbit returned a malformed response.',
   API_ERROR: 'The AI backend returned an error.',
+  OFF_TOPIC: 'Code Orbit answers programming and computer-science questions.',
+  REFUSED: "The AI couldn't help with that request.",
 }
 
 export default function ErrorState({ error, onRetry }) {
