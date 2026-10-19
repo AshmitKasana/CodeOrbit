@@ -6,6 +6,8 @@ import { motion } from 'framer-motion'
  * naturally enters the viewport. Pass `stagger` to fade in direct children
  * one after another instead of all at once.
  */
+const EASE_OUT_EXPO = [0.22, 1, 0.36, 1]
+
 export default function Reveal({ children, className = '', delay = 0, stagger = 0, as = motion.div, ...rest }) {
   // Accept either a motion component or a plain tag name string (e.g. "section").
   const Tag = typeof as === 'string' ? motion[as] : as
@@ -28,10 +30,10 @@ export default function Reveal({ children, className = '', delay = 0, stagger = 
   return (
     <Tag
       className={className}
-      initial={{ opacity: 0, y: 14 }}
+      initial={{ opacity: 0, y: 16 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: '-60px' }}
-      transition={{ duration: 0.5, ease: 'easeOut', delay }}
+      transition={{ duration: 0.55, ease: EASE_OUT_EXPO, delay }}
       {...rest}
     >
       {children}
@@ -40,6 +42,6 @@ export default function Reveal({ children, className = '', delay = 0, stagger = 
 }
 
 export const revealItem = {
-  hidden: { opacity: 0, y: 14 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.45, ease: 'easeOut' } },
+  hidden: { opacity: 0, y: 16 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.48, ease: EASE_OUT_EXPO } },
 }

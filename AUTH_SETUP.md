@@ -67,15 +67,25 @@ Apple's setup is more involved and requires a paid Apple Developer account:
      ```
    - Create a **Sign in with Apple key** (a `.p8` private key), and note its
      **Key ID** and your **Team ID**.
-2. In Supabase: **Authentication → Providers → Apple** → enter the Services
-   ID (client ID), Team ID, Key ID, and paste the `.p8` private key contents
-   → toggle the provider **on** → Save.
+2. Generate the client secret. Supabase does **not** accept the raw `.p8`
+   file — it needs a JWT signed with it. This runs locally, nothing is
+   uploaded (keep the `.p8` outside the repo; `*.p8` is git-ignored):
+   ```bash
+   node scripts/apple-client-secret.mjs "<path>/AuthKey_XXXXXXXXXX.p8" <TEAM_ID> <KEY_ID> <SERVICES_ID>
+   ```
+   Apple caps the secret at 6 months (the script issues 180 days), so
+   **re-run it and paste the new value before it expires** or Apple sign-in
+   will stop working.
+3. In Supabase: **Authentication → Providers → Apple** → put the Services ID
+   in **Client IDs**, paste the JWT into **Secret Key (for OAuth)** → toggle
+   the provider **on** → Save.
+That's all — no code or env changes are needed. The **Continue with Apple**
+button is always shown and fully implemented; until the provider is enabled,
+clicking it shows "Apple sign-in isn't available on this site yet" instead of
+signing the user in. It starts working the moment step 3 is saved.
 
-Until this is done, clicking **Continue with Apple** in Code Orbit will show
-the real error Supabase returns (e.g. "Unsupported provider" / "provider is
-not enabled") instead of silently doing nothing — that's intentional per the
-project's no-fake-buttons rule. The button itself is fully implemented and
-will start working the moment the provider is enabled above.
+Enrollment note: Apple may require the Apple Developer *app* (iPhone/iPad/Mac
+only, no Android) for identity verification in some regions.
 
 ## 5. Redirect URLs — local vs. production
 

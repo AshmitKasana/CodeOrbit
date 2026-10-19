@@ -3,7 +3,7 @@
 // Everything is stored locally (namespaced per signed-in user, like history and
 // bookmarks in utils/helpers.js) and derived from one small record:
 //
-//   { days: { 'YYYY-MM-DD': { lesson: 2, visualizer: 1, ... } },
+//   { days: { 'YYYY-MM-DD': { lesson: 2, question: 1, ... } },
 //     lessons: ['binary-search', ...] }          // unique lesson slugs seen
 //
 // The functions that compute streaks/XP/badges are pure so they can be unit
@@ -14,7 +14,7 @@ import { scopedKey } from '../utils/helpers'
 const ACTIVITY_KEY = 'dsa-ai:activity'
 const MAX_LESSONS = 500
 
-export const XP_PER_ACTION = { lesson: 10, visualizer: 5, complexity: 3, roadmap: 25 }
+export const XP_PER_ACTION = { lesson: 10, question: 3, roadmap: 25 }
 export const XP_PER_LEVEL = 100
 
 /** Local-calendar day string, e.g. "2026-09-20". */
@@ -73,7 +73,7 @@ export function getActivity(userId) {
 }
 
 /**
- * Records one learning action ('lesson' | 'visualizer' | 'complexity' | 'roadmap')
+ * Records one learning action ('lesson' | 'question' | 'roadmap')
  * for today. `meta.slug` de-duplicates lessons for the "unique lessons" count.
  */
 export function recordActivity(userId, type, meta = {}, now = new Date()) {
@@ -98,7 +98,7 @@ export function recordActivity(userId, type, meta = {}, now = new Date()) {
 // --- derived stats --------------------------------------------------------------
 
 export function computeStats(activity, roadmapProgress = {}, today = dayKey()) {
-  const totals = { lesson: 0, visualizer: 0, complexity: 0, roadmap: 0 }
+  const totals = { lesson: 0, question: 0, roadmap: 0 }
   for (const counts of Object.values(activity.days)) {
     for (const key of Object.keys(totals)) totals[key] += counts[key] || 0
   }
@@ -108,8 +108,7 @@ export function computeStats(activity, roadmapProgress = {}, today = dayKey()) {
 
   const xp =
     totals.lesson * XP_PER_ACTION.lesson +
-    totals.visualizer * XP_PER_ACTION.visualizer +
-    totals.complexity * XP_PER_ACTION.complexity +
+    totals.question * XP_PER_ACTION.question +
     roadmapCompleted * XP_PER_ACTION.roadmap
 
   return {
@@ -130,8 +129,8 @@ export const BADGES = [
   { id: 'first-lesson', label: 'Lift-off', description: 'Open your first lesson', earned: (s) => s.uniqueLessons >= 1 },
   { id: 'five-lessons', label: 'Curious Mind', description: 'Explore 5 different topics', earned: (s) => s.uniqueLessons >= 5 },
   { id: 'ten-lessons', label: 'Deep Diver', description: 'Explore 10 different topics', earned: (s) => s.uniqueLessons >= 10 },
-  { id: 'visualizer', label: 'Watch It Run', description: 'Finish an algorithm in the Visualizer', earned: (s) => s.visualizer >= 1 },
-  { id: 'complexity', label: 'Big-O Thinker', description: 'Open the Big-O Explorer', earned: (s) => s.complexity >= 1 },
+  { id: 'questions-10', label: 'Interview Ready', description: 'Review 10 interview questions', earned: (s) => s.question >= 10 },
+  { id: 'questions-50', label: 'Question Master', description: 'Review 50 interview questions', earned: (s) => s.question >= 50 },
   { id: 'streak-3', label: 'On a Roll', description: 'Keep a 3-day streak', earned: (s) => s.longestStreak >= 3 },
   { id: 'streak-7', label: 'Week of Orbit', description: 'Keep a 7-day streak', earned: (s) => s.longestStreak >= 7 },
   { id: 'roadmap-half', label: 'Halfway There', description: 'Complete half of the roadmap', earned: (s, roadmapTotal) => roadmapTotal > 0 && s.roadmapCompleted >= Math.ceil(roadmapTotal / 2) },

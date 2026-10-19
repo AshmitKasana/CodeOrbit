@@ -1,4 +1,5 @@
 import { slugify } from '../utils/helpers'
+import { GUIDE_ENTRIES } from './guideLessons'
 
 // ---------------------------------------------------------------------------
 // This file is the mock "AI" knowledge base used by aiService.js when no real
@@ -191,7 +192,7 @@ const arrays = {
 }
 
 const linkedList = {
-  keys: ['linked list', 'linkedlist', 'linked-list'],
+  keys: ['linked list', 'linked lists', 'linkedlist', 'linked-list'],
   build: () => ({
     title: 'Linked List',
     summary: 'A linear data structure where each element (node) stores a value and a pointer/reference to the next node, allowing O(1) insertion without shifting elements.',
@@ -268,14 +269,29 @@ function buildGenericPractice(topicLabel) {
   }
 }
 
-const ENTRIES = [pointers, arrays, linkedList]
+// Specific pattern guides come first so e.g. "two pointers" is never mistaken
+// for the memory-pointers lesson below.
+const ENTRIES = [...GUIDE_ENTRIES, pointers, arrays, linkedList]
+
+const escapeRegExp = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+
+/** Whole-word / whole-phrase match, so "trie" does not fire inside "retrieval". */
+function matchesKey(text, key) {
+  return new RegExp(`(^|[^a-z0-9])${escapeRegExp(key)}([^a-z0-9]|$)`).test(text)
+}
 
 export function findEntry(topic) {
   const t = topic.toLowerCase()
   for (const entry of ENTRIES) {
-    if (entry.keys.some((k) => t.includes(k))) return entry
+    if (entry.exclude?.some((word) => matchesKey(t, word))) continue
+    if (entry.keys.some((key) => matchesKey(t, key))) return entry
   }
   return null
+}
+
+/** True when the offline knowledge base has a hand-written lesson for this topic. */
+export function hasBuiltInGuide(topic) {
+  return findEntry(topic) !== null
 }
 
 export { buildGenericPractice }

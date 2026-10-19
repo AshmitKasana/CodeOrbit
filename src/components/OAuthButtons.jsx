@@ -37,6 +37,19 @@ function AppleGlyph() {
  * configured yet, the resulting error is shown inline rather than the
  * button silently doing nothing.
  */
+const PROVIDER_LABEL = { google: 'Google', apple: 'Apple', github: 'GitHub' }
+
+// Supabase answers with "Unsupported provider: provider is not enabled" (or
+// "missing OAuth secret") until a provider has been switched on and given its
+// credentials in the Supabase dashboard. That's a setup gap, not something the
+// visitor did wrong, so say so plainly and point them at what does work.
+function friendlyOAuthError(provider, message = '') {
+  if (/provider is not enabled|unsupported provider|missing oauth secret/i.test(message)) {
+    return `${PROVIDER_LABEL[provider]} sign-in isn't available on this site yet. Please use another option above.`
+  }
+  return message
+}
+
 export default function OAuthButtons({ showGithub = false }) {
   const { signInWithGoogle, signInWithApple, signInWithGithub, configured } = useAuth()
   const [loadingProvider, setLoadingProvider] = useState(null)
@@ -47,7 +60,7 @@ export default function OAuthButtons({ showGithub = false }) {
     setLoadingProvider(provider)
     const { error } = await fn()
     if (error) {
-      setError(error.message)
+      setError(friendlyOAuthError(provider, error.message))
       setLoadingProvider(null)
     }
     // On success Supabase redirects the whole page to the provider, so there

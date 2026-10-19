@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { AlertCircle } from 'lucide-react'
 import { supabase, isSupabaseConfigured } from '../lib/supabase'
@@ -49,9 +49,9 @@ export default function AuthCallback() {
             <AlertCircle size={24} />
           </div>
           <p className="mt-4 max-w-sm text-sm text-slate-500 dark:text-slate-400">{error}</p>
-          <a href="/login" className="btn-secondary mt-5">
+          <Link to="/login" className="btn-secondary mt-5">
             Back to Login
-          </a>
+          </Link>
         </>
       ) : (
         <>

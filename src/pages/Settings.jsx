@@ -63,8 +63,7 @@ export default function Settings() {
           <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-slate-400">AI lessons</p>
           <p className="text-sm text-slate-500 dark:text-slate-400">
             Code Orbit is free. To keep the AI sustainable, each account gets a daily allowance of AI-generated lessons and follow-up
-            questions that resets at midnight UTC. Lessons you have already opened, the Algorithm Visualizer and the Big-O Explorer never
-            count against it.
+            questions that resets at midnight UTC. Lessons you have already opened and the Interview Question Bank never count against it.
           </p>
         </div>
 

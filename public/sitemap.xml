@@ -24,16 +24,6 @@
     <loc>https://codeorbit21.netlify.app/interview</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://codeorbit21.netlify.app/visualizer</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://codeorbit21.netlify.app/complexity</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
   </url>  <url>
     <loc>https://codeorbit21.netlify.app/about</loc>
     <changefreq>monthly</changefreq>

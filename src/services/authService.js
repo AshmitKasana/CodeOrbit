@@ -42,36 +42,53 @@ export async function signUp({ email, password, name }) {
   return { data, error }
 }
 
-export async function signInWithGoogle() {
+// Which OAuth providers are switched on in the Supabase project. supabase-js's
+// signInWithOAuth() never checks this: it just builds an /authorize URL and
+// navigates the browser there, so a provider that isn't enabled dumps the
+// visitor on a raw JSON error page on supabase.co. Ask first (once, cached) so
+// we can fail inside the app instead. If the lookup itself fails we return
+// null and let the sign-in proceed as normal rather than blocking anyone.
+let providerSettings = null
+
+function loadEnabledProviders() {
+  if (!providerSettings) {
+    providerSettings = fetch(`${import.meta.env.VITE_SUPABASE_URL}/auth/v1/settings`, {
+      headers: { apikey: import.meta.env.VITE_SUPABASE_ANON_KEY },
+    })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((json) => json?.external ?? null)
+      .catch(() => null)
+      .then((external) => {
+        if (!external) providerSettings = null // don't cache a failed lookup
+        return external
+      })
+  }
+  return providerSettings
+}
+
+async function signInWithProvider(provider) {
   const blocked = guard()
   if (blocked) return blocked
+
+  const enabled = await loadEnabledProviders()
+  if (enabled && enabled[provider] === false) {
+    return {
+      data: null,
+      error: { message: 'Unsupported provider: provider is not enabled', code: 'PROVIDER_DISABLED' },
+    }
+  }
+
   const { data, error } = await supabase.auth.signInWithOAuth({
-    provider: 'google',
+    provider,
     options: { redirectTo: `${siteUrl()}/auth/callback` },
   })
   return { data, error }
 }
 
-export async function signInWithApple() {
-  const blocked = guard()
-  if (blocked) return blocked
-  const { data, error } = await supabase.auth.signInWithOAuth({
-    provider: 'apple',
-    options: { redirectTo: `${siteUrl()}/auth/callback` },
-  })
-  return { data, error }
-}
-
+export const signInWithGoogle = () => signInWithProvider('google')
+export const signInWithApple = () => signInWithProvider('apple')
 // Optional per the spec — same architecture as Google/Apple.
-export async function signInWithGithub() {
-  const blocked = guard()
-  if (blocked) return blocked
-  const { data, error } = await supabase.auth.signInWithOAuth({
-    provider: 'github',
-    options: { redirectTo: `${siteUrl()}/auth/callback` },
-  })
-  return { data, error }
-}
+export const signInWithGithub = () => signInWithProvider('github')
 
 export async function signOut() {
   const blocked = guard()

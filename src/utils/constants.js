@@ -62,10 +62,25 @@ export const TOPIC_CATALOG = {
     'Searching', 'Sorting', 'Recursion', 'Backtracking', 'Greedy',
     'Divide and Conquer', 'Dynamic Programming', 'Graph Algorithms', 'String Algorithms',
   ],
+  'Patterns & Techniques': [
+    'Two Pointers', 'Sliding Window', 'Prefix Sum', 'Binary Search', 'Monotonic Stack',
+    'Bit Manipulation', 'Fast & Slow Pointers', 'Merge Intervals',
+    'Top K Elements', "Kadane's Algorithm", 'Binary Search on Answer',
+  ],
+  'Graphs & Trees': [
+    'BFS', 'DFS', 'Topological Sort', 'Union-Find', 'Binary Tree Traversals',
+    'Lowest Common Ancestor', 'AVL Tree', 'Red-Black Tree', 'Minimum Spanning Tree',
+    'Shortest Path Algorithms', 'Bipartite Graph', 'Cycle Detection',
+  ],
+  'Dynamic Programming': [
+    'Memoization vs Tabulation', 'Knapsack Problem', 'Longest Common Subsequence',
+    'Longest Increasing Subsequence', 'Edit Distance', 'Coin Change',
+    'Matrix Chain Multiplication', 'Climbing Stairs',
+  ],
   'Advanced': [
     "Dijkstra's Algorithm", 'Bellman-Ford', 'Floyd-Warshall', "Kruskal's Algorithm",
-    "Prim's Algorithm", 'KMP Algorithm', 'Rabin-Karp', 'Topological Sort',
-    "Tarjan's Algorithm", 'Segment Trees', 'Bit Manipulation',
+    "Prim's Algorithm", 'KMP Algorithm', 'Rabin-Karp',
+    "Tarjan's Algorithm", 'Segment Trees',
   ],
 }
 
@@ -73,16 +88,22 @@ export const ROADMAP = [
   { id: 'basics', label: 'Programming Basics', topic: 'Programming Basics' },
   { id: 'complexity', label: 'Complexity Analysis', topic: 'Big O Notation' },
   { id: 'arrays-strings', label: 'Arrays & Strings', topic: 'Arrays' },
+  { id: 'two-pointers', label: 'Two Pointers & Sliding Window', topic: 'Two Pointers' },
+  { id: 'binary-search', label: 'Binary Search', topic: 'Binary Search' },
   { id: 'linked-lists', label: 'Linked Lists', topic: 'Linked List' },
   { id: 'stacks-queues', label: 'Stacks & Queues', topic: 'Stack' },
   { id: 'hashing', label: 'Hashing', topic: 'Hash Table' },
   { id: 'recursion', label: 'Recursion', topic: 'Recursion' },
   { id: 'trees', label: 'Trees', topic: 'Binary Tree' },
   { id: 'heaps', label: 'Heaps', topic: 'Heap' },
+  { id: 'tries', label: 'Tries', topic: 'Trie' },
   { id: 'graphs', label: 'Graphs', topic: 'Graphs' },
+  { id: 'bfs-dfs', label: 'BFS & DFS', topic: 'BFS' },
+  { id: 'union-find', label: 'Union-Find', topic: 'Union-Find' },
   { id: 'greedy', label: 'Greedy', topic: 'Greedy' },
   { id: 'backtracking', label: 'Backtracking', topic: 'Backtracking' },
   { id: 'dp', label: 'Dynamic Programming', topic: 'Dynamic Programming' },
+  { id: 'bit-manipulation', label: 'Bit Manipulation', topic: 'Bit Manipulation' },
   { id: 'advanced', label: 'Advanced Algorithms', topic: "Dijkstra's Algorithm" },
 ]
 

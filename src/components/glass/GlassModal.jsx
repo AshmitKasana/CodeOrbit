@@ -28,15 +28,15 @@ export default function GlassModal({ open, onClose, className = '', children }) 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.15 }}
+            transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
             onClick={onClose}
             className="absolute inset-0 bg-black/40 backdrop-blur-sm"
           />
           <motion.div
-            initial={{ opacity: 0, scale: 0.97, y: -8 }}
+            initial={{ opacity: 0, scale: 0.96, y: -10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.97, y: -8 }}
-            transition={{ duration: 0.18, ease: 'easeOut' }}
+            exit={{ opacity: 0, scale: 0.97, y: -6 }}
+            transition={{ type: 'spring', stiffness: 380, damping: 28, mass: 0.7 }}
             role="dialog"
             aria-modal="true"
             className={`glass-surface relative w-full max-w-lg overflow-hidden rounded-2xl bg-white/85 dark:bg-[#141416]/85 ${className}`}

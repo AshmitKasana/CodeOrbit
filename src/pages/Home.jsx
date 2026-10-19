@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion, useScroll, useTransform } from 'framer-motion'
-import { ArrowRight, Code2, GitCompareArrows, History, Layers, ListChecks, Sparkles } from 'lucide-react'
+import { ArrowRight, BookOpen, Code2, GitCompareArrows, History, Layers, ListChecks, MessageCircleQuestion, Sparkles } from 'lucide-react'
 import SearchBar from '../components/SearchBar'
 import Reveal, { revealItem } from '../components/Reveal'
 import Spotlight from '../components/Spotlight'
@@ -20,9 +20,6 @@ const FEATURES = [
   { icon: Code2, title: 'Runnable code examples', text: 'Copy, expand, switch languages, and run snippets in an interactive playground.' },
   { icon: ListChecks, title: 'Practice & interview prep', text: 'Auto-generated easy/medium/hard problems plus common interview questions.' },
 ]
-
-// Static bar heights for the little "sorting" preview on the Visualizer card.
-const PREVIEW_BARS = [40, 72, 28, 90, 55, 18, 80, 46, 64, 32, 86, 22]
 
 export default function Home() {
   const navigate = useNavigate()
@@ -48,23 +45,34 @@ export default function Home() {
         <div className="dot-grid pointer-events-none absolute inset-0 -z-10 [mask-image:radial-gradient(60%_55%_at_50%_15%,black,transparent)]" />
         <Spotlight />
         <motion.div
+          aria-hidden="true"
           style={{ y: ringY, opacity: ringOpacity }}
-          className="orbit-ring pointer-events-none absolute left-1/2 top-8 -z-10 h-[420px] w-[420px] -translate-x-1/2 animate-orbitSpinSlow"
-        />
+          className="orbit-ring pointer-events-none absolute left-1/2 top-6 -z-10 h-[440px] w-[440px] -translate-x-1/2 animate-orbitSpinSlow"
+        >
+          <span className="absolute -top-1 left-1/2 h-2 w-2 -translate-x-1/2 rounded-full bg-signal shadow-signal" />
+        </motion.div>
+        <motion.div
+          aria-hidden="true"
+          style={{ y: ringY, opacity: ringOpacity }}
+          className="orbit-ring pointer-events-none absolute left-1/2 top-[72px] -z-10 h-[300px] w-[300px] -translate-x-1/2 animate-orbitSpinReverse"
+        >
+          <span className="absolute -bottom-1 left-1/2 h-1.5 w-1.5 -translate-x-1/2 rounded-full bg-slate-400 dark:bg-white/50" />
+        </motion.div>
 
         <div className="mx-auto max-w-3xl text-center">
           <motion.span
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
             className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 px-3 py-1 text-xs font-medium uppercase tracking-wider text-slate-500 dark:border-surface-border dark:text-slate-400"
           >
             <Sparkles size={12} /> AI-powered DSA learning
           </motion.span>
 
           <motion.h1
-            initial={{ opacity: 0, y: 10 }}
+            initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.05 }}
+            transition={{ duration: 0.55, delay: 0.05, ease: [0.22, 1, 0.36, 1] }}
             className="mt-5 font-display text-4xl font-bold leading-[1.05] tracking-tight text-slate-900 dark:text-white sm:text-6xl"
           >
             Master DSA.
@@ -72,15 +80,20 @@ export default function Home() {
             At your own orbit.
           </motion.h1>
           <motion.p
-            initial={{ opacity: 0, y: 10 }}
+            initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
+            transition={{ duration: 0.55, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
             className="mx-auto mt-5 max-w-xl text-lg text-slate-500 dark:text-slate-400"
           >
             Ask anything about Data Structures, Algorithms, Programming Languages, and Computer Science.
           </motion.p>
 
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="mt-9">
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.55, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
+            className="mt-9"
+          >
             <SearchBar onSubmit={handleSubmit} size="lg" />
           </motion.div>
         </div>
@@ -110,6 +123,7 @@ export default function Home() {
               key={f.title}
               variants={revealItem}
               whileHover={{ y: -3 }}
+              transition={{ type: 'spring', stiffness: 320, damping: 24 }}
               className={`card card-hover p-6 ${f.big ? 'sm:col-span-2 lg:col-span-2 lg:row-span-1' : ''}`}
             >
               <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 text-slate-600 dark:border-surface-border dark:text-slate-300">
@@ -122,68 +136,60 @@ export default function Home() {
         </div>
       </Reveal>
 
-      <Reveal as="section" className="mx-auto max-w-6xl px-4 pb-20">
-        <p className="text-xs font-semibold uppercase tracking-wider text-signal">Interactive labs</p>
-        <h2 className="mb-6 mt-1 font-display text-2xl font-bold text-slate-900 dark:text-white">Don&apos;t just read it — watch it run.</h2>
+      <Reveal as="section" stagger={0.08} className="mx-auto max-w-6xl px-4 pb-20">
+        <p className="text-xs font-semibold uppercase tracking-wider text-signal">Always available — no quota needed</p>
+        <h2 className="mb-6 mt-1 font-display text-2xl font-bold text-slate-900 dark:text-white">Study the patterns &amp; drill the questions.</h2>
         <div className="grid gap-4 md:grid-cols-2">
-          <Link to="/visualizer" className="card card-hover group p-6">
-            <div className="mb-5 flex h-24 items-end gap-1" aria-hidden="true">
-              {PREVIEW_BARS.map((h, i) => (
-                <span
-                  key={i}
-                  className="flex-1 rounded-t bg-slate-200 transition-colors duration-300 group-hover:bg-signal/70 dark:bg-white/10 dark:group-hover:bg-signal/70"
-                  style={{ height: `${h}%`, transitionDelay: `${i * 25}ms` }}
-                />
-              ))}
-            </div>
-            <h3 className="font-semibold text-slate-900 dark:text-white">Algorithm Visualizer</h3>
-            <p className="mt-1.5 text-sm text-slate-500 dark:text-slate-400">
-              Step through bubble, merge, quick and heap sort — or race two algorithms on the same data. Pause, rewind and see exactly why
-              O(n log n) beats O(n²).
-            </p>
-            <span className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-slate-900 dark:text-white">
-              Open the lab <ArrowRight size={14} className="transition group-hover:translate-x-0.5" />
-            </span>
-          </Link>
+          <motion.div variants={revealItem} whileHover={{ y: -3 }} transition={{ type: 'spring', stiffness: 320, damping: 24 }}>
+            <Link to="/topics" className="card card-hover group block h-full p-6">
+              <span className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl border border-signal/30 bg-signal/10 text-signal transition-transform duration-300 ease-out-expo group-hover:scale-105">
+                <BookOpen size={18} />
+              </span>
+              <h3 className="font-semibold text-slate-900 dark:text-white">Pattern &amp; Topic Guides</h3>
+              <p className="mt-1.5 text-sm text-slate-500 dark:text-slate-400">
+                Hand-written pattern guides — Two Pointers, Sliding Window, Binary Search, BFS/DFS, Dynamic Programming, Monotonic Stack and more — with reusable Python &amp; JavaScript templates and worked problems.
+              </p>
+              <span className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-slate-900 dark:text-white">
+                Browse topics <ArrowRight size={14} className="transition-transform duration-300 ease-out-expo group-hover:translate-x-1" />
+              </span>
+            </Link>
+          </motion.div>
 
-          <Link to="/complexity" className="card card-hover group p-6">
-            <svg viewBox="0 0 200 96" className="mb-5 h-24 w-full" fill="none" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
-              <path d="M4,88 L196,86" stroke="#10b981" />
-              <path d="M4,86 C50,50 110,42 196,38" stroke="#14b8a6" />
-              <path d="M4,88 L196,44" stroke="#5b7fff" />
-              <path d="M4,88 C90,80 150,50 196,8" stroke="#f59e0b" />
-              <path d="M4,88 C120,84 165,60 196,4" stroke="#ef4444" className="transition-all duration-500 group-hover:opacity-60" />
-            </svg>
-            <h3 className="font-semibold text-slate-900 dark:text-white">Big-O Explorer</h3>
-            <p className="mt-1.5 text-sm text-slate-500 dark:text-slate-400">
-              Drag a slider and watch O(1) to O(n!) diverge. See how long each would really take on a billion-operations-per-second
-              machine, plus the data-structure cheat sheet interviewers expect.
-            </p>
-            <span className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-slate-900 dark:text-white">
-              Explore complexity <ArrowRight size={14} className="transition group-hover:translate-x-0.5" />
-            </span>
-          </Link>
+          <motion.div variants={revealItem} whileHover={{ y: -3 }} transition={{ type: 'spring', stiffness: 320, damping: 24 }}>
+            <Link to="/interview" className="card card-hover group block h-full p-6">
+              <span className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl border border-signal/30 bg-signal/10 text-signal transition-transform duration-300 ease-out-expo group-hover:scale-105">
+                <MessageCircleQuestion size={18} />
+              </span>
+              <h3 className="font-semibold text-slate-900 dark:text-white">Interview Question Bank</h3>
+              <p className="mt-1.5 text-sm text-slate-500 dark:text-slate-400">
+                Curated interview questions across 12 categories with concise takeaways, deep-dive explanations, interviewer tips, a flashcard quiz mode and review tracking.
+              </p>
+              <span className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-slate-900 dark:text-white">
+                Open Question Bank <ArrowRight size={14} className="transition-transform duration-300 ease-out-expo group-hover:translate-x-1" />
+              </span>
+            </Link>
+          </motion.div>
         </div>
       </Reveal>
 
-      <Reveal as="section" className="mx-auto max-w-6xl px-4 pb-24">
+      <Reveal as="section" stagger={0.06} className="mx-auto max-w-6xl px-4 pb-24">
         <h2 className="mb-6 font-display text-2xl font-bold text-slate-900 dark:text-white">Explore by category</h2>
         <div className="grid gap-4 md:grid-cols-3">
           {Object.entries(TOPIC_CATALOG).map(([category, topics]) => (
-            <div key={category} className="card p-5">
+            <motion.div key={category} variants={revealItem} className="card card-hover p-5">
               <h3 className="mb-3 font-semibold text-slate-900 dark:text-white">{category}</h3>
               <div className="flex flex-wrap gap-1.5">
                 {topics.slice(0, 8).map((t) => (
                   <button
                     key={t}
                     onClick={() => navigate(`/learn/${slugify(t)}`, { state: { rawQuery: t } })}
-                    className="rounded-full bg-slate-100 px-2.5 py-1 text-xs text-slate-600 transition hover:bg-slate-900 hover:text-white dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white dark:hover:text-slate-900"
+                    className="rounded-full bg-slate-100 px-2.5 py-1 text-xs text-slate-600 transition-all duration-200 ease-out-expo hover:-translate-y-px hover:bg-slate-900 hover:text-white dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white dark:hover:text-slate-900"
                   >
                     {t}
                   </button>
                 ))}
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
       </Reveal>

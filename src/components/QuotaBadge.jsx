@@ -9,7 +9,7 @@ export default function QuotaBadge({ scope = 'generate', label = 'AI lessons lef
   const low = quota.remaining <= 1
   return (
     <span
-      title="Resets at midnight UTC. Cached lessons and the interactive labs never use your quota."
+      title="Resets at midnight UTC. Cached lessons and the Question Bank never use your quota."
       className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium ${
         low
           ? 'border-signal/40 bg-signal/10 text-signal'

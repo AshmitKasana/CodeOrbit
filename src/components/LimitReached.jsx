@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { BarChart3, Play, UserPlus, Zap } from 'lucide-react'
+import { BookOpen, MessageCircleQuestion, UserPlus, Zap } from 'lucide-react'
 import { formatResetIn } from '../services/quotaStore'
 
 /**
@@ -21,15 +21,15 @@ export default function LimitReached({ quota, signedIn }) {
       <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
         {resetIn ? `Your quota resets in ${resetIn}. ` : 'Your quota resets at midnight UTC. '}
         {signedIn
-          ? 'Lessons you have already opened stay available, and the interactive labs never use your quota.'
-          : 'Signed-in learners get a higher daily limit — and the interactive labs never use any quota.'}
+          ? 'Lessons you have already opened stay available, and the Question Bank never uses your quota.'
+          : 'Signed-in learners get a higher daily limit — and the Question Bank never uses any quota.'}
       </p>
       <div className="mt-6 flex flex-wrap justify-center gap-3">
-        <Link to="/visualizer" className="btn-primary">
-          <Play size={15} /> Try the Algorithm Visualizer
+        <Link to="/interview" className="btn-primary">
+          <MessageCircleQuestion size={15} /> Practise with the Question Bank
         </Link>
-        <Link to="/complexity" className="btn-secondary">
-          <BarChart3 size={15} /> Big-O Explorer
+        <Link to="/topics" className="btn-secondary">
+          <BookOpen size={15} /> Browse topics
         </Link>
         {!signedIn && (
           <Link to="/signup" className="btn-secondary">

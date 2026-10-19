@@ -1,18 +1,28 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { ArrowUpRight, Boxes, Cpu, Rocket, Search, X } from 'lucide-react'
+import { ArrowUpRight, BookOpen, Boxes, Cpu, GitBranch, Layers, Rocket, Search, Workflow, X } from 'lucide-react'
 import { TOPIC_CATALOG } from '../utils/constants'
+import { GUIDE_COUNT } from '../data/topicGuides'
+import { hasBuiltInGuide } from '../services/knowledgeBase'
 import { slugify } from '../utils/helpers'
 import Reveal, { revealItem } from '../components/Reveal'
 
-const ICONS = { 'Data Structures': Boxes, Algorithms: Cpu, Advanced: Rocket }
+const ICONS = {
+  'Data Structures': Boxes,
+  Algorithms: Cpu,
+  'Patterns & Techniques': Workflow,
+  'Graphs & Trees': GitBranch,
+  'Dynamic Programming': Layers,
+  Advanced: Rocket,
+}
 const CATEGORIES = Object.keys(TOPIC_CATALOG)
 
 export default function Topics() {
   const navigate = useNavigate()
   const [query, setQuery] = useState('')
   const [activeCategory, setActiveCategory] = useState('All')
+  const [guidesOnly, setGuidesOnly] = useState(false)
 
   function open(topic) {
     navigate(`/learn/${slugify(topic)}`, { state: { rawQuery: topic } })
@@ -22,21 +32,24 @@ export default function Topics() {
     const q = query.trim().toLowerCase()
     return Object.entries(TOPIC_CATALOG)
       .filter(([category]) => activeCategory === 'All' || category === activeCategory)
-      .map(([category, topics]) => [category, q ? topics.filter((t) => t.toLowerCase().includes(q)) : topics])
+      .map(([category, topics]) => [
+        category,
+        topics.filter((t) => (!q || t.toLowerCase().includes(q)) && (!guidesOnly || hasBuiltInGuide(t))),
+      ])
       .filter(([, topics]) => topics.length > 0)
-  }, [query, activeCategory])
+  }, [query, activeCategory, guidesOnly])
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
       <div className="mb-8 text-center">
         <h1 className="font-display text-3xl font-bold text-slate-900 dark:text-white sm:text-4xl">Topic Explorer</h1>
         <p className="mx-auto mt-3 max-w-xl text-slate-500 dark:text-slate-400">
-          Browse every core data structure and algorithm. Click any topic for a full AI-generated explanation.
+          Browse every core data structure, algorithm and problem-solving pattern — including {GUIDE_COUNT} hand-written guides that work offline without using any AI quota.
         </p>
       </div>
 
-      <div className="mx-auto mb-4 max-w-lg">
-        <div className="flex items-center gap-2 rounded-xl border border-slate-200 px-3.5 py-2.5 transition focus-within:border-slate-900/50 dark:border-surface-border dark:focus-within:border-white/50">
+      <div className="mx-auto mb-4 flex max-w-xl flex-col gap-2 sm:flex-row">
+        <div className="flex flex-1 items-center gap-2 rounded-xl border border-slate-200 px-3.5 py-2.5 transition focus-within:border-slate-900/50 dark:border-surface-border dark:focus-within:border-white/50">
           <Search size={16} className="shrink-0 text-slate-400" />
           <input
             value={query}
@@ -50,6 +63,18 @@ export default function Topics() {
             </button>
           )}
         </div>
+        <button
+          type="button"
+          onClick={() => setGuidesOnly((g) => !g)}
+          aria-pressed={guidesOnly}
+          className={`flex shrink-0 items-center justify-center gap-1.5 rounded-xl border px-3.5 py-2.5 text-xs font-medium transition ${
+            guidesOnly
+              ? 'border-signal/40 bg-signal/10 text-signal'
+              : 'border-slate-200 text-slate-600 hover:border-slate-900/40 dark:border-surface-border dark:text-slate-300 dark:hover:border-white/40'
+          }`}
+        >
+          <BookOpen size={14} /> Built-in guides ({GUIDE_COUNT})
+        </button>
       </div>
 
       <div className="mb-10 flex flex-wrap justify-center gap-2">
@@ -84,19 +109,29 @@ export default function Topics() {
                 <h2 className="text-xl font-semibold text-slate-900 dark:text-white">{category}</h2>
               </div>
               <Reveal stagger={0.04} className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
-                {topics.map((t) => (
-                  <motion.button
-                    key={t}
-                    variants={revealItem}
-                    whileHover={{ y: -3 }}
-                    whileTap={{ scale: 0.97 }}
-                    onClick={() => open(t)}
-                    className="card card-hover group flex items-center justify-between px-4 py-3 text-left text-sm font-medium text-slate-700 dark:text-slate-200"
-                  >
-                    {t}
-                    <ArrowUpRight size={14} className="shrink-0 text-slate-400 transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-slate-900 dark:group-hover:text-white" />
-                  </motion.button>
-                ))}
+                {topics.map((t) => {
+                  const hasGuide = hasBuiltInGuide(t)
+                  return (
+                    <motion.button
+                      key={t}
+                      variants={revealItem}
+                      whileHover={{ y: -3 }}
+                      whileTap={{ scale: 0.97 }}
+                      onClick={() => open(t)}
+                      className="card card-hover group flex items-center justify-between gap-2 px-4 py-3 text-left text-sm font-medium text-slate-700 dark:text-slate-200"
+                    >
+                      <span className="truncate">{t}</span>
+                      <span className="flex shrink-0 items-center gap-1.5">
+                        {hasGuide && (
+                          <span className="rounded-full border border-signal/30 bg-signal/10 px-2 py-0.5 text-[10px] font-semibold text-signal">
+                            Guide
+                          </span>
+                        )}
+                        <ArrowUpRight size={14} className="text-slate-400 transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-slate-900 dark:group-hover:text-white" />
+                      </span>
+                    </motion.button>
+                  )
+                })}
               </Reveal>
             </section>
           )

@@ -13,10 +13,12 @@ import { motion, useMotionValue, useSpring } from 'framer-motion'
  */
 export default function Spotlight({ className = '', size = 480, color = 'rgba(91,127,255,0.16)' }) {
   const ref = useRef(null)
-  const x = useMotionValue(-9999)
-  const y = useMotionValue(-9999)
-  const springX = useSpring(x, { stiffness: 120, damping: 25, mass: 0.5 })
-  const springY = useSpring(y, { stiffness: 120, damping: 25, mass: 0.5 })
+  const x = useMotionValue(0)
+  const y = useMotionValue(0)
+  const opacity = useMotionValue(0)
+  const springX = useSpring(x, { stiffness: 130, damping: 24, mass: 0.5 })
+  const springY = useSpring(y, { stiffness: 130, damping: 24, mass: 0.5 })
+  const springOpacity = useSpring(opacity, { stiffness: 120, damping: 22 })
 
   useEffect(() => {
     const parent = ref.current?.parentElement
@@ -29,15 +31,15 @@ export default function Spotlight({ className = '', size = 480, color = 'rgba(91
       if (withinX && withinY) {
         x.set(e.clientX - rect.left)
         y.set(e.clientY - rect.top)
+        opacity.set(1)
       } else {
-        x.set(-9999)
-        y.set(-9999)
+        opacity.set(0)
       }
     }
 
     window.addEventListener('mousemove', onMove, { passive: true })
     return () => window.removeEventListener('mousemove', onMove)
-  }, [x, y])
+  }, [x, y, opacity])
 
   return (
     <div ref={ref} aria-hidden="true" className={`pointer-events-none absolute inset-0 -z-10 overflow-hidden ${className}`}>
@@ -48,6 +50,7 @@ export default function Spotlight({ className = '', size = 480, color = 'rgba(91
           height: size,
           left: springX,
           top: springY,
+          opacity: springOpacity,
           x: -size / 2,
           y: -size / 2,
           background: `radial-gradient(circle, ${color}, transparent 70%)`,

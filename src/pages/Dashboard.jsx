@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { ArrowRight, Award, Bookmark, BookOpen, Compass, Flame, History, ListChecks, Lock, Route } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import { getBookmarks, getHistory, getRoadmapProgress, slugify } from '../utils/helpers'
@@ -79,7 +79,7 @@ export default function Dashboard() {
               </div>
               <p className="mt-1.5 text-xs text-slate-400">{stats.xpForNext - stats.xpIntoLevel} XP to level {stats.level + 1}</p>
               <p className="mt-3 text-xs text-slate-400">
-                Earn XP by opening lessons (+10), finishing a visualizer run (+5), exploring Big-O (+3) and completing roadmap steps (+25).
+                Earn XP by opening lessons (+10), reviewing interview questions (+3 each) and completing roadmap steps (+25).
               </p>
             </div>
 
@@ -124,7 +124,7 @@ export default function Dashboard() {
             </button>
           ) : (
             <p className="text-sm text-slate-400">
-              You haven&apos;t started a topic yet. <a href="/topics" className="underline">Browse Topics</a> to begin.
+              You haven&apos;t started a topic yet. <Link to="/topics" className="underline">Browse Topics</Link> to begin.
             </p>
           )}
         </motion.div>
@@ -139,9 +139,9 @@ export default function Dashboard() {
           <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
             {completed.length} / {ROADMAP.length} roadmap steps completed ({progressPct}%)
           </p>
-          <a href="/roadmap" className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-slate-900 hover:underline dark:text-white">
+          <Link to="/roadmap" className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-slate-900 hover:underline dark:text-white">
             View Roadmap <ArrowRight size={13} />
-          </a>
+          </Link>
         </motion.div>
 
         <motion.div variants={revealItem} className="card p-5">
@@ -169,7 +169,7 @@ export default function Dashboard() {
           </div>
           {bookmarks.length === 0 ? (
             <p className="text-sm text-slate-400">
-              No bookmarks yet. <a href="/topics" className="underline">Browse Topics</a>.
+              No bookmarks yet. <Link to="/topics" className="underline">Browse Topics</Link>.
             </p>
           ) : (
             <ul className="space-y-1.5">
@@ -182,9 +182,9 @@ export default function Dashboard() {
               ))}
             </ul>
           )}
-          <a href="/bookmarks" className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-slate-900 hover:underline dark:text-white">
+          <Link to="/bookmarks" className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-slate-900 hover:underline dark:text-white">
             View All <ArrowRight size={13} />
-          </a>
+          </Link>
         </motion.div>
 
         <motion.div variants={revealItem} className="card p-5">

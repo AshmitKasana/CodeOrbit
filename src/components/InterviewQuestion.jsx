@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
 import { ChevronDown, MessageCircleQuestion, Sparkles } from 'lucide-react'
 
 export default function InterviewQuestion({ item, index }) {
@@ -13,20 +14,30 @@ export default function InterviewQuestion({ item, index }) {
             <p className="font-medium text-slate-800 dark:text-slate-100">{item.question}</p>
           </div>
         </div>
-        <ChevronDown size={18} className={`shrink-0 text-slate-400 transition ${open ? 'rotate-180' : ''}`} />
+        <ChevronDown size={18} className={`shrink-0 text-slate-400 transition-transform duration-300 ease-out-expo ${open ? 'rotate-180' : ''}`} />
       </button>
-      {open && (
-        <div className="space-y-3 border-t border-slate-200 px-5 py-4 dark:border-surface-border">
-          <p className="text-sm font-medium text-slate-900 dark:text-white">{item.shortAnswer}</p>
-          <p className="prose-dsa text-sm">{item.detailedAnswer}</p>
-          {item.tip && (
-            <div className="flex items-start gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600 dark:border-surface-border dark:bg-white/[0.03] dark:text-slate-300">
-              <Sparkles size={14} className="mt-0.5 shrink-0" />
-              <span>{item.tip}</span>
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.26, ease: [0.22, 1, 0.36, 1] }}
+            className="overflow-hidden"
+          >
+            <div className="space-y-3 border-t border-slate-200 px-5 py-4 dark:border-surface-border">
+              <p className="text-sm font-medium text-slate-900 dark:text-white">{item.shortAnswer}</p>
+              <p className="prose-dsa text-sm">{item.detailedAnswer}</p>
+              {item.tip && (
+                <div className="flex items-start gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600 dark:border-surface-border dark:bg-white/[0.03] dark:text-slate-300">
+                  <Sparkles size={14} className="mt-0.5 shrink-0" />
+                  <span>{item.tip}</span>
+                </div>
+              )}
             </div>
-          )}
-        </div>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

@@ -13,8 +13,8 @@ vi.mock('../hooks/useAuth', () => ({
 vi.mock('../lib/supabase', () => ({ supabase: null, isSupabaseConfigured: false }))
 
 import Home from './Home'
-import Visualizer from './Visualizer'
-import Complexity from './Complexity'
+import Topics from './Topics'
+import Interview from './Interview'
 import Dashboard from './Dashboard'
 import Settings from './Settings'
 import Header from '../components/Header'
@@ -22,8 +22,6 @@ import Footer from '../components/Footer'
 import LimitReached from '../components/LimitReached'
 import QuotaBadge from '../components/QuotaBadge'
 import TopicHeader from '../components/TopicHeader'
-import SortingLab from '../components/visualizer/SortingLab'
-import SearchLab from '../components/visualizer/SearchLab'
 import { resetQuotaState, setQuota } from '../services/quotaStore'
 import { recordActivity } from '../lib/progress'
 
@@ -36,61 +34,44 @@ afterEach(() => {
 })
 
 describe('Home', () => {
-  it('advertises the interactive labs and no longer mentions pricing', () => {
+  it('advertises the pattern guides and question bank and no longer mentions pricing', () => {
     const html = render(<Home />)
-    expect(html).toContain('Algorithm Visualizer')
-    expect(html).toContain('Big-O Explorer')
-    expect(html).toContain('href="/visualizer"')
-    expect(html).toContain('href="/complexity"')
+    expect(html).toContain('Topic Guides')
+    expect(html).toContain('Interview Question Bank')
+    expect(html).toContain('href="/topics"')
+    expect(html).toContain('href="/interview"')
     expect(html).not.toMatch(/pricing/i)
   })
 })
 
 describe('navigation', () => {
-  it('links to the labs and has no pricing link in the header or footer', () => {
+  it('links to core pages and has no pricing link in the header or footer', () => {
     const html = render(<><Header theme="dark" onToggleTheme={() => {}} onOpenSearch={() => {}} /><Footer /></>)
-    expect(html).toContain('href="/visualizer"')
-    expect(html).toContain('href="/complexity"')
+    expect(html).toContain('href="/topics"')
+    expect(html).toContain('href="/roadmap"')
+    expect(html).toContain('href="/practice"')
+    expect(html).toContain('href="/interview"')
     expect(html).not.toContain('/pricing')
   })
 })
 
-describe('Visualizer', () => {
-  it('renders the sorting lab by default', () => {
-    const html = render(<Visualizer />)
-    expect(html).toContain('Algorithm Visualizer')
-    for (const name of ['Bubble Sort', 'Selection Sort', 'Insertion Sort', 'Merge Sort', 'Quick Sort', 'Heap Sort']) {
-      expect(html).toContain(name)
-    }
-    expect(html).toContain('Race against')
-    expect(html).toContain('Pseudocode')
-  })
-
-  it('SortingLab draws one bar per array element with a playable timeline', () => {
-    const html = render(<SortingLab />)
-    expect((html.match(/rounded-t-\[3px\]/g) || []).length).toBe(24) // default array size
-    expect(html).toContain('aria-label="Timeline"')
-    expect(html).toContain('Comparisons')
-  })
-
-  it('SearchLab shows the array, target and the linear-vs-binary cost comparison', () => {
-    const html = render(<SearchLab />)
-    expect(html).toContain('Looking for')
-    expect(html).toContain('Binary search')
-    expect(html).toContain('Linear search')
-    expect(html).toContain('comparisons')
+describe('Topics', () => {
+  it('renders all categories and marks topics with built-in guides', () => {
+    const html = render(<Topics />)
+    expect(html).toContain('Topic Explorer')
+    expect(html).toContain('Built-in guides')
+    expect(html).toContain('Two Pointers')
+    expect(html).toContain('Guide')
   })
 })
 
-describe('Complexity (Big-O Explorer)', () => {
-  it('renders the chart, the operations table and the data-structure cheat sheet', () => {
-    const html = render(<Complexity />)
-    expect(html).toContain('Big-O Explorer')
-    expect(html).toContain('<svg')
-    for (const label of ['O(1)', 'O(log n)', 'O(n log n)', 'O(n!)']) expect(html).toContain(label)
-    expect(html).toContain('Data-structure cheat sheet')
-    expect(html).toContain('Hash Table')
-    expect(html).toContain('one billion simple operations per second')
+describe('Interview (Question Bank)', () => {
+  it('renders the curated question bank, category filters and quiz mode trigger', () => {
+    const html = render(<Interview />)
+    expect(html).toContain('Interview Question Bank')
+    expect(html).toContain('Quiz Me')
+    expect(html).toContain('Unreviewed only')
+    expect(html).toContain('What is Big-O notation')
   })
 })
 
@@ -98,7 +79,7 @@ describe('Dashboard', () => {
   it('shows the streak, XP and badges for a signed-in learner', () => {
     auth.user = { id: 'u1', email: 'ashmit@example.com', user_metadata: { name: 'Ashmit' } }
     recordActivity('u1', 'lesson', { slug: 'heaps' })
-    recordActivity('u1', 'visualizer')
+    recordActivity('u1', 'question')
 
     const html = render(<Dashboard />)
 
@@ -106,7 +87,7 @@ describe('Dashboard', () => {
     expect(html).toContain('Your Orbit')
     expect(html).toContain('day streak')
     expect(html).toContain('Lift-off') // first-lesson badge
-    expect(html).toContain('15 XP') // 10 (lesson) + 5 (visualizer)
+    expect(html).toContain('13 XP') // 10 (lesson) + 3 (question)
     expect(html).toContain('Badges')
   })
 
@@ -134,8 +115,8 @@ describe('LimitReached', () => {
   it('explains the limit and points at things that need no AI — without any upsell', () => {
     const html = render(<LimitReached quota={{ limit: 5, resetsAt }} signedIn={false} />)
     expect(html).toContain('AI lessons')
-    expect(html).toContain('href="/visualizer"')
-    expect(html).toContain('href="/complexity"')
+    expect(html).toContain('href="/interview"')
+    expect(html).toContain('href="/topics"')
     expect(html).toContain('Create a free account')
     expect(html).not.toMatch(/upgrade|pricing|\bpro\b/i)
   })

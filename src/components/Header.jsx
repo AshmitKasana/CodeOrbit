@@ -15,8 +15,6 @@ const NAV = [
   { to: '/roadmap', label: 'Roadmap' },
   { to: '/practice', label: 'Practice' },
   { to: '/interview', label: 'Interview' },
-  { to: '/visualizer', label: 'Visualizer' },
-  { to: '/complexity', label: 'Big-O' },
 ]
 
 export default function Header({ theme, onToggleTheme, onOpenSearch }) {
@@ -52,21 +50,32 @@ export default function Header({ theme, onToggleTheme, onOpenSearch }) {
           <span className="font-display text-[15px] tracking-tight">Code Orbit</span>
         </Link>
 
-        <nav className="hidden items-center gap-0.5 lg:flex">
+        <nav className="hidden items-center gap-0.5 md:flex">
           {NAV.map((item, i) => (
             <NavLink
               key={item.label + i}
               to={item.to}
               end={item.end}
               className={({ isActive }) =>
-                `focus-ring rounded-lg px-3 py-1.5 text-sm font-medium transition ${
+                `focus-ring relative rounded-lg px-3 py-1.5 text-sm font-medium transition-colors duration-200 ${
                   isActive
                     ? 'text-slate-900 dark:text-white'
                     : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
                 }`
               }
             >
-              {item.label}
+              {({ isActive }) => (
+                <>
+                  {isActive && (
+                    <motion.span
+                      layoutId="header-nav-pill"
+                      transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                      className="pointer-events-none absolute inset-0 -z-10 rounded-lg bg-slate-900/[0.06] dark:bg-white/[0.08]"
+                    />
+                  )}
+                  <span className="relative z-10">{item.label}</span>
+                </>
+              )}
             </NavLink>
           ))}
         </nav>
@@ -117,7 +126,7 @@ export default function Header({ theme, onToggleTheme, onOpenSearch }) {
             )}
           </div>
 
-          <button onClick={() => setOpen((o) => !o)} aria-label="Toggle menu" className="icon-btn lg:hidden">
+          <button onClick={() => setOpen((o) => !o)} aria-label="Toggle menu" className="icon-btn md:hidden">
             {open ? <X size={16} /> : <Menu size={16} />}
           </button>
         </div>
@@ -130,7 +139,7 @@ export default function Header({ theme, onToggleTheme, onOpenSearch }) {
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.22, ease: 'easeOut' }}
-            className="glass-surface overflow-hidden rounded-none border-x-0 border-b-0 border-t-black/10 shadow-none dark:border-t-white/10 lg:hidden"
+            className="glass-surface overflow-hidden rounded-none border-x-0 border-b-0 border-t-black/10 shadow-none dark:border-t-white/10 md:hidden"
           >
             <div className="flex flex-col gap-0.5 px-4 py-3">
               {mobileItems.map((item, i) => (

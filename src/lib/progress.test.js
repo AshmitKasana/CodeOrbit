@@ -77,8 +77,8 @@ describe('recordActivity / getActivity', () => {
   it('counts actions per day and type', () => {
     recordActivity(null, 'lesson', { slug: 'heaps' }, now)
     recordActivity(null, 'lesson', { slug: 'graphs' }, now)
-    const activity = recordActivity(null, 'visualizer', {}, now)
-    expect(activity.days['2026-09-20']).toEqual({ lesson: 2, visualizer: 1 })
+    const activity = recordActivity(null, 'question', {}, now)
+    expect(activity.days['2026-09-20']).toEqual({ lesson: 2, question: 1 })
   })
 
   it('tracks each lesson slug once', () => {
@@ -105,21 +105,21 @@ describe('computeStats', () => {
   const today = '2026-09-20'
   const activity = {
     days: {
-      '2026-09-19': { lesson: 2, visualizer: 1 },
-      '2026-09-20': { lesson: 1, complexity: 1 },
+      '2026-09-19': { lesson: 2, question: 1 },
+      '2026-09-20': { lesson: 1, question: 1 },
     },
     lessons: ['a', 'b', 'c'],
   }
 
   it('totals actions, streaks and unique lessons', () => {
     const stats = computeStats(activity, {}, today)
-    expect(stats).toMatchObject({ lesson: 3, visualizer: 1, complexity: 1, uniqueLessons: 3, activeDays: 2, currentStreak: 2 })
+    expect(stats).toMatchObject({ lesson: 3, question: 2, uniqueLessons: 3, activeDays: 2, currentStreak: 2 })
   })
 
   it('computes XP and level, including roadmap completions', () => {
     const stats = computeStats(activity, { a: 'Completed', b: 'Learning', c: 'Completed' }, today)
-    // 3 lessons*10 + 1 visualizer*5 + 1 complexity*3 + 2 roadmap*25 = 88
-    expect(stats.xp).toBe(88)
+    // 3 lessons*10 + 2 questions*3 + 2 roadmap*25 = 86
+    expect(stats.xp).toBe(86)
     expect(stats.level).toBe(1)
     expect(stats.roadmapCompleted).toBe(2)
   })
@@ -141,7 +141,7 @@ describe('badges', () => {
 
   it('awards the right badges as milestones are reached', () => {
     const activity = {
-      days: { '2026-09-18': { lesson: 1 }, '2026-09-19': { visualizer: 1 }, '2026-09-20': { complexity: 1 } },
+      days: { '2026-09-18': { lesson: 1 }, '2026-09-19': { question: 6 }, '2026-09-20': { question: 5 } },
       lessons: ['a', 'b', 'c', 'd', 'e'],
     }
     const stats = computeStats(activity, {}, '2026-09-20')
@@ -150,8 +150,8 @@ describe('badges', () => {
       'first-lesson': true,
       'five-lessons': true,
       'ten-lessons': false,
-      visualizer: true,
-      complexity: true,
+      'questions-10': true,
+      'questions-50': false,
       'streak-3': true,
       'streak-7': false,
     })
@@ -172,7 +172,7 @@ describe('badges', () => {
 
 describe('recentDays', () => {
   it('returns the last N days ending today with activity flags', () => {
-    const activity = { days: { '2026-09-18': { lesson: 1 }, '2026-09-20': { lesson: 2, visualizer: 1 } }, lessons: [] }
+    const activity = { days: { '2026-09-18': { lesson: 1 }, '2026-09-20': { lesson: 2, question: 1 } }, lessons: [] }
     const days = recentDays(activity, 7, '2026-09-20')
     expect(days).toHaveLength(7)
     expect(days[0].day).toBe('2026-09-14')

@@ -37,6 +37,9 @@ export default {
         signal: '0 0 0 1px rgba(91,127,255,0.35), 0 0 40px rgba(91,127,255,0.25)',
         glass: '0 1px 0 0 rgb(255 255 255 / 0.08) inset, 0 8px 30px rgb(0 0 0 / 0.12)',
       },
+      transitionTimingFunction: {
+        'out-expo': 'cubic-bezier(0.22, 1, 0.36, 1)',
+      },
       keyframes: {
         fadeIn: { from: { opacity: 0, transform: 'translateY(4px)' }, to: { opacity: 1, transform: 'translateY(0)' } },
         shimmer: { '0%': { backgroundPosition: '-400px 0' }, '100%': { backgroundPosition: '400px 0' } },
@@ -46,10 +49,11 @@ export default {
         glowPulse: { '0%, 100%': { opacity: 0.55 }, '50%': { opacity: 1 } },
       },
       animation: {
-        fadeIn: 'fadeIn 0.35s ease-out',
+        fadeIn: 'fadeIn 0.35s cubic-bezier(0.22, 1, 0.36, 1)',
         shimmer: 'shimmer 1.6s infinite linear',
         orbitSpin: 'orbitSpin 5s linear infinite',
-        orbitSpinSlow: 'orbitSpin 12s linear infinite',
+        orbitSpinSlow: 'orbitSpin 16s linear infinite',
+        orbitSpinReverse: 'orbitSpin 22s linear infinite reverse',
         floatY: 'floatY 3.2s ease-in-out infinite',
         pulseSoft: 'pulseSoft 2.2s ease-in-out infinite',
         glowPulse: 'glowPulse 3s ease-in-out infinite',

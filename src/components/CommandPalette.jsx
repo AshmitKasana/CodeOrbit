@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
-  ArrowRight, BarChart3, Bookmark, Brain, Github, Home as HomeIcon, Info, LayoutDashboard, LogIn, LogOut,
-  MessageCircleQuestion, Moon, Route, Search, Sparkles, Sun, Target, UserPlus,
+  ArrowRight, Bookmark, Brain, Github, Home as HomeIcon, Info, LayoutDashboard, LogIn, LogOut,
+  MessageCircleQuestion, Moon, Route, Search, Sun, Target, UserPlus,
 } from 'lucide-react'
 import GlassModal from './glass/GlassModal'
 import { slugify } from '../utils/helpers'
@@ -28,8 +28,6 @@ export default function CommandPalette({ open, onClose, theme, onToggleTheme }) 
       { id: 'roadmap', label: 'Open the Roadmap', icon: Route, action: () => navigate('/roadmap') },
       { id: 'practice', label: 'Practice Problems', icon: Target, action: () => navigate('/practice') },
       { id: 'interview', label: 'Interview Prep', icon: MessageCircleQuestion, action: () => navigate('/interview') },
-      { id: 'visualizer', label: 'Algorithm Visualizer', icon: Sparkles, action: () => navigate('/visualizer') },
-      { id: 'complexity', label: 'Big-O Explorer', icon: BarChart3, action: () => navigate('/complexity') },
       ...(user
         ? [
             { id: 'dashboard', label: 'Go to Dashboard', icon: LayoutDashboard, action: () => navigate('/dashboard') },
