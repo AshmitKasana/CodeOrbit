@@ -14,9 +14,9 @@ const EASE_OUT_EXPO = [0.22, 1, 0.36, 1]
 export default function PageFade({ children }) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 12 }}
+      initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.38, ease: EASE_OUT_EXPO }}
+      transition={{ duration: 0.16, ease: EASE_OUT_EXPO }}
     >
       {children}
     </motion.div>

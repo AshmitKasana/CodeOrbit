@@ -9,19 +9,18 @@ import ProtectedRoute from './components/ProtectedRoute'
 import PageFade from './components/PageFade'
 import OrbitMark from './components/OrbitMark'
 import Home from './pages/Home'
+import Topics from './pages/Topics'
+import Roadmap from './pages/Roadmap'
+import Practice from './pages/Practice'
+import Interview from './pages/Interview'
 import { getStoredTheme, setStoredTheme } from './utils/helpers'
 
-// Home loads eagerly — it's the very first thing almost every visitor sees.
-// Everything else is route-split so the initial bundle doesn't have to pay
-// for Monaco, the syntax highlighter, or Supabase before the app is even
-// interactive. This is the single highest-leverage performance change for a
-// site whose homepage is a search box: heavy, rarely-hit pages (the code
-// playground, auth, settings) shouldn't cost anyone who never visits them.
-const Learn = lazy(() => import('./pages/Learn'))
-const Topics = lazy(() => import('./pages/Topics'))
-const Roadmap = lazy(() => import('./pages/Roadmap'))
-const Practice = lazy(() => import('./pages/Practice'))
-const Interview = lazy(() => import('./pages/Interview'))
+// Core navbar tabs (Home, Topics, Roadmap, Practice, Interview) load eagerly
+// so switching top-level tabs is instantaneous. Heavy or secondary routes
+// (Learn with its code playground, Auth, Account pages) stay code-split and
+// Learn is preloaded right after first paint.
+const loadLearn = () => import('./pages/Learn')
+const Learn = lazy(loadLearn)
 const Bookmarks = lazy(() => import('./pages/Bookmarks'))
 const About = lazy(() => import('./pages/About'))
 const Login = lazy(() => import('./pages/Login'))
@@ -59,6 +58,15 @@ export default function App() {
     document.documentElement.classList.toggle('light', theme === 'light')
     setStoredTheme(theme)
   }, [theme])
+
+  // Preload the Learn route chunk in the background right after initial paint
+  // so clicking any topic from Home, Topics, or Roadmap opens with zero delay.
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      loadLearn().catch(() => {})
+    }, 100)
+    return () => clearTimeout(timer)
+  }, [])
 
   // ⌘K / Ctrl+K opens the global command palette from anywhere in the app.
   useEffect(() => {

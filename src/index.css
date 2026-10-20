@@ -4,6 +4,7 @@
 
 :root {
   color-scheme: dark;
+  scroll-behavior: smooth;
   /* Light mode: accent is near-black, accent-fg is the color placed ON it (white). */
   --accent: 15 15 17;
   --accent-fg: 255 255 255;

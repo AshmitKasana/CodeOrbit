@@ -69,7 +69,7 @@ export default function Header({ theme, onToggleTheme, onOpenSearch }) {
                   {isActive && (
                     <motion.span
                       layoutId="header-nav-pill"
-                      transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                      transition={{ type: 'spring', stiffness: 600, damping: 38, mass: 0.5 }}
                       className="pointer-events-none absolute inset-0 -z-10 rounded-lg bg-slate-900/[0.06] dark:bg-white/[0.08]"
                     />
                   )}
@@ -138,7 +138,7 @@ export default function Header({ theme, onToggleTheme, onOpenSearch }) {
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.22, ease: 'easeOut' }}
+            transition={{ duration: 0.16, ease: [0.22, 1, 0.36, 1] }}
             className="glass-surface overflow-hidden rounded-none border-x-0 border-b-0 border-t-black/10 shadow-none dark:border-t-white/10 md:hidden"
           >
             <div className="flex flex-col gap-0.5 px-4 py-3">

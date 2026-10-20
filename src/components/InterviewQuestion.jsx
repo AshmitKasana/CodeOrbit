@@ -14,7 +14,7 @@ export default function InterviewQuestion({ item, index }) {
             <p className="font-medium text-slate-800 dark:text-slate-100">{item.question}</p>
           </div>
         </div>
-        <ChevronDown size={18} className={`shrink-0 text-slate-400 transition-transform duration-300 ease-out-expo ${open ? 'rotate-180' : ''}`} />
+        <ChevronDown size={18} className={`shrink-0 text-slate-400 transition-transform duration-200 ease-out-expo ${open ? 'rotate-180' : ''}`} />
       </button>
       <AnimatePresence initial={false}>
         {open && (
@@ -22,7 +22,7 @@ export default function InterviewQuestion({ item, index }) {
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.26, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 0.16, ease: [0.22, 1, 0.36, 1] }}
             className="overflow-hidden"
           >
             <div className="space-y-3 border-t border-slate-200 px-5 py-4 dark:border-surface-border">

@@ -18,7 +18,7 @@ export default function Reveal({ children, className = '', delay = 0, stagger = 
         className={className}
         initial="hidden"
         whileInView="visible"
-        viewport={{ once: true, margin: '-60px' }}
+        viewport={{ once: true, margin: '0px 0px -15px 0px' }}
         variants={{ hidden: {}, visible: { transition: { staggerChildren: stagger, delayChildren: delay } } }}
         {...rest}
       >
@@ -30,10 +30,10 @@ export default function Reveal({ children, className = '', delay = 0, stagger = 
   return (
     <Tag
       className={className}
-      initial={{ opacity: 0, y: 16 }}
+      initial={{ opacity: 0, y: 8 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '-60px' }}
-      transition={{ duration: 0.55, ease: EASE_OUT_EXPO, delay }}
+      viewport={{ once: true, margin: '0px 0px -15px 0px' }}
+      transition={{ duration: 0.22, ease: EASE_OUT_EXPO, delay }}
       {...rest}
     >
       {children}
@@ -42,6 +42,6 @@ export default function Reveal({ children, className = '', delay = 0, stagger = 
 }
 
 export const revealItem = {
-  hidden: { opacity: 0, y: 16 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.48, ease: EASE_OUT_EXPO } },
+  hidden: { opacity: 0, y: 8 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.2, ease: EASE_OUT_EXPO } },
 }

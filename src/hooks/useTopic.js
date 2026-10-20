@@ -32,6 +32,16 @@ export function useTopic(rawQuery, level) {
       setStatus('success')
       return
     }
+    // Built-in / local lessons contain all 4 level variants (beginner, intermediate,
+    // advanced, interview) in a single object — switching level tabs should be instant.
+    const baseCached = cache.current.get(rawQuery)
+    if (baseCached && baseCached.source === 'local') {
+      const adapted = { ...baseCached, difficulty: level }
+      cache.current.set(cacheKey, adapted)
+      setResult(adapted)
+      setStatus('success')
+      return
+    }
     setStatus('loading')
     setStageIndex(0)
     setError(null)
@@ -39,6 +49,7 @@ export function useTopic(rawQuery, level) {
     try {
       const data = await generateExplanation(rawQuery, level, setStageIndex)
       cache.current.set(cacheKey, data)
+      if (data?.source === 'local') cache.current.set(rawQuery, data)
       setResult(data)
       setStatus('success')
       addToHistory({ slug: data.slug, title: data.title, query: rawQuery, language: data.language }, user?.id)
@@ -56,9 +67,12 @@ export function useTopic(rawQuery, level) {
 
   useEffect(() => {
     run()
-    setConversation([])
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rawQuery, level])
+
+  useEffect(() => {
+    setConversation([])
+  }, [rawQuery])
 
   const retry = useCallback(() => {
     if (rawQuery) {

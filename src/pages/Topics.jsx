@@ -108,15 +108,16 @@ export default function Topics() {
                 </span>
                 <h2 className="text-xl font-semibold text-slate-900 dark:text-white">{category}</h2>
               </div>
-              <Reveal stagger={0.04} className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
+              <Reveal stagger={0.015} className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
                 {topics.map((t) => {
                   const hasGuide = hasBuiltInGuide(t)
                   return (
                     <motion.button
                       key={t}
                       variants={revealItem}
-                      whileHover={{ y: -3 }}
-                      whileTap={{ scale: 0.97 }}
+                      whileHover={{ y: -2 }}
+                      whileTap={{ scale: 0.98 }}
+                      transition={{ duration: 0.15 }}
                       onClick={() => open(t)}
                       className="card card-hover group flex items-center justify-between gap-2 px-4 py-3 text-left text-sm font-medium text-slate-700 dark:text-slate-200"
                     >

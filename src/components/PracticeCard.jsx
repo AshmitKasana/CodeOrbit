@@ -21,7 +21,7 @@ export default function PracticeCard({ problem, difficulty }) {
           <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${DIFFICULTY_STYLE[difficulty]}`}>{difficulty}</span>
           <span className="font-medium text-slate-800 dark:text-slate-100">{problem.title}</span>
         </div>
-        <ChevronDown size={18} className={`shrink-0 text-slate-400 transition-transform duration-300 ease-out-expo ${open ? 'rotate-180' : ''}`} />
+        <ChevronDown size={18} className={`shrink-0 text-slate-400 transition-transform duration-200 ease-out-expo ${open ? 'rotate-180' : ''}`} />
       </button>
 
       <AnimatePresence initial={false}>
@@ -30,7 +30,7 @@ export default function PracticeCard({ problem, difficulty }) {
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
             className="overflow-hidden"
           >
             <div className="space-y-4 border-t border-slate-200 px-5 py-4 dark:border-surface-border">
@@ -66,7 +66,7 @@ export default function PracticeCard({ problem, difficulty }) {
                     initial={{ height: 0, opacity: 0 }}
                     animate={{ height: 'auto', opacity: 1 }}
                     exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+                    transition={{ duration: 0.16, ease: [0.22, 1, 0.36, 1] }}
                     className="overflow-hidden"
                   >
                     <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600 dark:border-surface-border dark:bg-white/[0.03] dark:text-slate-300">
@@ -82,7 +82,7 @@ export default function PracticeCard({ problem, difficulty }) {
                     initial={{ height: 0, opacity: 0 }}
                     animate={{ height: 'auto', opacity: 1 }}
                     exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.26, ease: [0.22, 1, 0.36, 1] }}
+                    transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
                     className="overflow-hidden"
                   >
                     <div className="space-y-3">

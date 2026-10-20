@@ -110,7 +110,7 @@ export async function askFollowUp(topicResult, question, conversationHistory = [
 // Offline follow-up answers (used when no AI backend is configured/reachable).
 async function cannedFollowUp(topicResult, question) {
   const level = topicResult?.difficulty
-  await delay(600 + Math.random() * 500)
+  await delay(40)
 
   const q = question.toLowerCase()
   const topic = topicResult?.title || 'this topic'
@@ -252,22 +252,22 @@ function finalizeResult(data, rawQuery, level) {
 // ---------------------------------------------------------------------------
 async function mockGenerate(rawQuery, level, onStage) {
   onStage(0)
-  await delay(500 + Math.random() * 400)
+  await delay(10)
 
   const { topic, language } = parseQuery(rawQuery)
   const entry = findEntry(topic)
 
   onStage(1)
-  await delay(600 + Math.random() * 500)
+  await delay(10)
 
   onStage(2)
-  await delay(500 + Math.random() * 400)
+  await delay(10)
 
   onStage(3)
-  await delay(500 + Math.random() * 400)
+  await delay(10)
 
   onStage(4)
-  await delay(350 + Math.random() * 250)
+  await delay(10)
 
   const base = entry ? entry.build(language) : buildGeneric(topic, language)
   const languageNote = base.languageNote ? base.languageNote(language) : null

@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useState } from 'react'
-import Editor from '@monaco-editor/react'
+import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
 import { Play, RotateCcw, Terminal } from 'lucide-react'
 import LanguageTabs from './LanguageTabs'
+
+const Editor = lazy(() => import('@monaco-editor/react'))
 
 const MONACO_LANG = {
   Java: 'java', C: 'c', 'C++': 'cpp', Python: 'python', JavaScript: 'javascript',
@@ -50,7 +51,7 @@ export default function CodePlayground({ examples = [] }) {
         })
       }
       setRunning(false)
-    }, 400)
+    }, 120)
   }
 
   if (!languages.length) return null
@@ -60,15 +61,17 @@ export default function CodePlayground({ examples = [] }) {
       <div className="border-b border-slate-200 px-4 pt-3 dark:border-surface-border">
         <LanguageTabs languages={languages} active={activeLang} onChange={setActiveLang} />
       </div>
-      <div className="h-72 border-b border-slate-200 dark:border-surface-border">
-        <Editor
-          height="100%"
-          language={MONACO_LANG[activeLang] || 'plaintext'}
-          value={code}
-          onChange={(v) => setCode(v ?? '')}
-          theme="vs-dark"
-          options={{ fontSize: 13, minimap: { enabled: false }, scrollBeyondLastLine: false, padding: { top: 12 } }}
-        />
+      <div className="h-72 border-b border-slate-200 bg-[#1e1e1e] dark:border-surface-border">
+        <Suspense fallback={<pre className="h-full overflow-auto p-4 font-mono text-xs text-slate-300">{code}</pre>}>
+          <Editor
+            height="100%"
+            language={MONACO_LANG[activeLang] || 'plaintext'}
+            value={code}
+            onChange={(v) => setCode(v ?? '')}
+            theme="vs-dark"
+            options={{ fontSize: 13, minimap: { enabled: false }, scrollBeyondLastLine: false, padding: { top: 12 } }}
+          />
+        </Suspense>
       </div>
       <div className="flex items-center gap-2 px-4 py-3">
         <button onClick={run} disabled={running} className="btn-primary py-1.5">

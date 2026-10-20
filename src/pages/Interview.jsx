@@ -405,7 +405,7 @@ function BankQuestionCard({ item, index, reviewed, onToggleReviewed }) {
             </div>
             <p className="font-medium text-slate-800 dark:text-slate-100">{item.question}</p>
           </div>
-          <ChevronDown size={18} className={`mt-1 shrink-0 text-slate-400 transition-transform duration-300 ease-out-expo ${open ? 'rotate-180' : ''}`} />
+          <ChevronDown size={18} className={`mt-1 shrink-0 text-slate-400 transition-transform duration-200 ease-out-expo ${open ? 'rotate-180' : ''}`} />
         </button>
 
         <button
@@ -414,7 +414,7 @@ function BankQuestionCard({ item, index, reviewed, onToggleReviewed }) {
           aria-pressed={reviewed}
           aria-label={reviewed ? 'Mark as unreviewed' : 'Mark as reviewed'}
           title={reviewed ? 'Reviewed' : 'Mark as reviewed (+3 XP)'}
-          className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border transition-all duration-200 ease-out-expo active:scale-90 ${
+          className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border transition-all duration-150 ease-out-expo active:scale-90 ${
             reviewed
               ? 'border-signal bg-signal text-white'
               : 'border-slate-200 text-slate-400 hover:border-slate-400 dark:border-surface-border dark:hover:border-white/40'
@@ -430,7 +430,7 @@ function BankQuestionCard({ item, index, reviewed, onToggleReviewed }) {
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.26, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 0.16, ease: [0.22, 1, 0.36, 1] }}
             className="overflow-hidden"
           >
             <div className="space-y-3 border-t border-slate-200 px-5 py-4 dark:border-surface-border">

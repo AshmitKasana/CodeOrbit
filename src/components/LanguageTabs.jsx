@@ -1,6 +1,8 @@
+import { useId } from 'react'
 import { motion } from 'framer-motion'
 
 export default function LanguageTabs({ languages, active, onChange }) {
+  const id = useId()
   return (
     <div className="flex flex-wrap gap-1.5 border-b border-slate-200 pb-2 dark:border-surface-border">
       {languages.map((lang) => (
@@ -11,12 +13,12 @@ export default function LanguageTabs({ languages, active, onChange }) {
         >
           {active === lang && (
             <motion.span
-              layoutId="lang-tab-active"
+              layoutId={`${id}-lang-tab`}
               className="absolute inset-0 rounded-lg bg-accent"
-              transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+              transition={{ type: 'spring', stiffness: 600, damping: 38, mass: 0.5 }}
             />
           )}
-          <span className={`relative ${active === lang ? 'text-accent-fg' : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'}`}>
+          <span className={`relative z-10 ${active === lang ? 'text-accent-fg' : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'}`}>
             {lang}
           </span>
         </button>
