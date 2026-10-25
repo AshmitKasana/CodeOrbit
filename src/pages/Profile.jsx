@@ -18,8 +18,14 @@ export default function Profile() {
   const navigate = useNavigate()
   const [signingOut, setSigningOut] = useState(false)
 
-  const name = user?.user_metadata?.name || null
+  const name =
+    user?.user_metadata?.name ||
+    user?.user_metadata?.full_name ||
+    user?.user_metadata?.user_name ||
+    user?.user_metadata?.preferred_username ||
+    null
   const email = user?.email || ''
+  const avatarUrl = user?.user_metadata?.avatar_url || user?.user_metadata?.picture || null
   const joined = user?.created_at ? new Date(user.created_at) : null
   const bookmarks = useMemo(() => getBookmarks(user?.id), [user?.id])
   const progress = useMemo(() => getRoadmapProgress(user?.id), [user?.id])
@@ -35,8 +41,12 @@ export default function Profile() {
     <div className="mx-auto max-w-2xl px-4 py-12 sm:px-6">
       <Reveal className="card p-6 sm:p-8">
         <div className="flex items-center gap-4">
-          <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-accent text-xl font-semibold text-accent-fg">
-            {initialsFor(name, email)}
+          <span className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-full bg-accent text-xl font-semibold text-accent-fg">
+            {avatarUrl ? (
+              <img src={avatarUrl} alt={name || email} className="h-full w-full object-cover" />
+            ) : (
+              initialsFor(name, email)
+            )}
           </span>
           <div className="min-w-0">
             <p className="truncate font-display text-xl font-bold text-slate-900 dark:text-white">{name || email.split('@')[0]}</p>

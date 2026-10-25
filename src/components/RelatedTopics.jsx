@@ -11,9 +11,10 @@ export default function RelatedTopics({ topics = [] }) {
       {topics.map((t) => (
         <motion.button
           key={t}
+          type="button"
           whileHover={{ y: -2 }}
           whileTap={{ scale: 0.97 }}
-          onClick={() => navigate(`/learn/${slugify(t)}`)}
+          onClick={() => navigate(`/learn/${slugify(t)}`, { state: { rawQuery: t } })}
           className="group chip flex items-center gap-1.5"
         >
           {t}

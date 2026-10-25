@@ -105,6 +105,114 @@ export function createApp({
     res.json({ ok: true, ai: Boolean(generator), model: generator?.model ?? null, quota: quota.kind })
   })
 
+  app.post('/api/auth/oauth/exchange', async (req, res) => {
+    const { provider = 'google', code, clientId, redirectUri } = req.body || {}
+    if (!code) {
+      return res.status(400).json({ code: 'BAD_REQUEST', error: 'Missing authorization code.' })
+    }
+
+    try {
+      if (provider === 'google') {
+        const resolvedClientId =
+          clientId ||
+          process.env.VITE_GOOGLE_CLIENT_ID ||
+          process.env.GOOGLE_CLIENT_ID ||
+          '589298760152-s1j9hb1fqnn8qdrn976r3oicj84h2bnj.apps.googleusercontent.com'
+        const resolvedSecret = process.env.GOOGLE_CLIENT_SECRET
+        if (!resolvedSecret) {
+          return res.status(400).json({ code: 'MISSING_GOOGLE_CONFIG', error: 'Google OAuth secret is not configured.' })
+        }
+        if (!resolvedClientId) {
+          return res.status(400).json({ code: 'MISSING_CLIENT_ID', error: 'Google Client ID is required.' })
+        }
+
+        const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams({
+            code,
+            client_id: resolvedClientId,
+            client_secret: resolvedSecret,
+            redirect_uri: redirectUri,
+            grant_type: 'authorization_code',
+          }),
+        })
+        const tokenJson = await tokenRes.json()
+        if (!tokenRes.ok || !tokenJson.access_token) {
+          return res.status(400).json({
+            code: 'OAUTH_TOKEN_ERROR',
+            error: tokenJson.error_description || tokenJson.error || 'Failed to exchange Google OAuth code.',
+          })
+        }
+
+        const profileRes = await fetch('https://openidconnect.googleapis.com/v1/userinfo', {
+          headers: { Authorization: `Bearer ${tokenJson.access_token}` },
+        })
+        const profile = await profileRes.json()
+        return res.json({
+          user: {
+            id: profile.sub,
+            email: profile.email,
+            name: profile.name || profile.given_name || profile.email?.split('@')[0],
+            avatar_url: profile.picture || null,
+            provider: 'google',
+          },
+        })
+      }
+
+      if (provider === 'github') {
+        const resolvedClientId = process.env.VITE_GITHUB_CLIENT_ID || process.env.GITHUB_CLIENT_ID
+        const resolvedSecret = process.env.GITHUB_CLIENT_SECRET
+        if (!resolvedClientId || !resolvedSecret) {
+          return res.status(400).json({ code: 'MISSING_GITHUB_CONFIG', error: 'GitHub OAuth credentials are not configured.' })
+        }
+
+        const tokenRes = await fetch('https://github.com/login/oauth/access_token', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+          },
+          body: JSON.stringify({
+            client_id: resolvedClientId,
+            client_secret: resolvedSecret,
+            code,
+            redirect_uri: redirectUri,
+          }),
+        })
+        const tokenJson = await tokenRes.json()
+        if (!tokenJson.access_token) {
+          return res.status(400).json({
+            code: 'OAUTH_TOKEN_ERROR',
+            error: tokenJson.error_description || 'Failed to exchange GitHub OAuth code.',
+          })
+        }
+
+        const profileRes = await fetch('https://api.github.com/user', {
+          headers: {
+            Authorization: `Bearer ${tokenJson.access_token}`,
+            Accept: 'application/vnd.github+json',
+          },
+        })
+        const profile = await profileRes.json()
+        return res.json({
+          user: {
+            id: String(profile.id),
+            email: profile.email || `${profile.login}@users.noreply.github.com`,
+            name: profile.name || profile.login,
+            username: profile.login,
+            avatar_url: profile.avatar_url || null,
+            provider: 'github',
+          },
+        })
+      }
+
+      return res.status(400).json({ code: 'UNSUPPORTED_PROVIDER', error: `Unsupported provider: ${provider}` })
+    } catch (err) {
+      return res.status(502).json({ code: 'OAUTH_EXCHANGE_FAILED', error: err?.message || 'OAuth exchange failed.' })
+    }
+  })
+
   app.get('/api/quota', async (req, res) => {
     const identity = await resolveIdentity(req)
     const [generate, chat] = await Promise.all([

@@ -12,7 +12,13 @@ export default function Dashboard() {
   const { user } = useAuth()
   const navigate = useNavigate()
 
-  const displayName = user?.user_metadata?.name || user?.email?.split('@')[0] || 'Learner'
+  const displayName =
+    user?.user_metadata?.name ||
+    user?.user_metadata?.full_name ||
+    user?.user_metadata?.user_name ||
+    user?.user_metadata?.preferred_username ||
+    user?.email?.split('@')[0] ||
+    'Learner'
   const history = useMemo(() => getHistory(user?.id), [user?.id])
   const bookmarks = useMemo(() => getBookmarks(user?.id), [user?.id])
   const progress = useMemo(() => getRoadmapProgress(user?.id), [user?.id])
@@ -196,8 +202,14 @@ export default function Dashboard() {
           ) : (
             <ul className="space-y-1.5">
               {completed.slice(0, 5).map((step) => (
-                <li key={step.id} className="text-sm text-slate-600 dark:text-slate-300">
-                  {step.label}
+                <li key={step.id}>
+                  <button
+                    type="button"
+                    onClick={() => open(step.topic)}
+                    className="text-left text-sm text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"
+                  >
+                    {step.label}
+                  </button>
                 </li>
               ))}
             </ul>

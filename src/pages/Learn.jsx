@@ -29,15 +29,6 @@ import { useAuth } from '../hooks/useAuth'
 import { refreshQuota } from '../services/aiService'
 import { unslugify, isBookmarked, toggleBookmark } from '../utils/helpers'
 
-const QUICK_JUMP_ITEMS = [
-  { id: 'overview', label: 'Overview', icon: BookOpen },
-  { id: 'examples', label: 'Code & Playground', icon: PenTool },
-  { id: 'visual', label: 'Interactive Diagram', icon: Network },
-  { id: 'complexity', label: 'Big-O Complexity', icon: Cpu },
-  { id: 'interview', label: 'Interview Q&A', icon: MessageCircleQuestion },
-  { id: 'practice', label: 'Practice Problems', icon: ListChecks },
-]
-
 export default function Learn() {
   const { topic: slug } = useParams()
   const location = useLocation()
@@ -74,10 +65,6 @@ export default function Learn() {
     setBookmarked((b) => !b)
   }
 
-  function jumpToSection(id) {
-    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  }
-
   if (status === 'loading' || status === 'idle') return <LoadingState stageIndex={stageIndex} />
   if (status === 'error') return <ErrorState error={error} onRetry={retry} />
   if (status === 'limit') return <LimitReached quota={limit?.quota} signedIn={Boolean(user) || Boolean(limit?.signedIn)} />
@@ -96,24 +83,6 @@ export default function Learn() {
             bookmarked={bookmarked}
             onToggleBookmark={handleBookmark}
           />
-
-          {/* 1-Click Quick-Jump Bar */}
-          <div className="mb-8 flex flex-wrap items-center gap-1.5 rounded-2xl border border-slate-200/80 bg-slate-50/70 p-2 dark:border-surface-border dark:bg-white/[0.02]">
-            <span className="px-2 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
-              Jump to:
-            </span>
-            {QUICK_JUMP_ITEMS.map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => jumpToSection(item.id)}
-                className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200/80 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:border-signal hover:text-signal dark:border-surface-border dark:bg-surface-card dark:text-slate-200 dark:hover:border-signal"
-              >
-                <item.icon size={13} className="text-signal" />
-                {item.label}
-              </button>
-            ))}
-          </div>
 
           <ExplanationSection id="overview" icon={BookOpen} title="Overview">
             <Markdown text={result.overview?.[level.toLowerCase()] || result.overview?.beginner} />

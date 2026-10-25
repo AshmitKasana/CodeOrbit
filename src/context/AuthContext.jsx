@@ -11,30 +11,42 @@ export const AuthContext = createContext(null)
  * auth actions so UI components never import authService directly.
  */
 export function AuthProvider({ children }) {
-  const [session, setSession] = useState(null)
-  const [loading, setLoading] = useState(isSupabaseConfigured)
+  const [session, setSession] = useState(() => authService.getLocalSession())
+  const [loading, setLoading] = useState(() => isSupabaseConfigured && !authService.getLocalSession())
 
   useEffect(() => {
-    if (!isSupabaseConfigured) return
+    const unsubscribeLocal = authService.onLocalAuthChange((localSession) => {
+      setSession(localSession)
+      setLoading(false)
+    })
+
+    if (!isSupabaseConfigured || !supabase) {
+      setLoading(false)
+      return unsubscribeLocal
+    }
 
     let active = true
 
     supabase.auth.getSession().then(({ data }) => {
       if (!active) return
-      setSession(data.session)
+      const local = authService.getLocalSession()
+      setSession(local || data?.session || null)
       setLoading(false)
     })
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, newSession) => {
-      setSession(newSession)
+      const local = authService.getLocalSession()
+      const resolved = newSession || local || null
+      setSession(resolved)
       setLoading(false)
       if (newSession?.user) authService.syncProfile(newSession.user)
     })
 
     return () => {
       active = false
+      unsubscribeLocal()
       subscription.unsubscribe()
     }
   }, [])
@@ -43,7 +55,7 @@ export function AuthProvider({ children }) {
     user: session?.user ?? null,
     session,
     loading,
-    configured: isSupabaseConfigured,
+    configured: true,
     signIn: authService.signIn,
     signUp: authService.signUp,
     signInWithGoogle: authService.signInWithGoogle,

@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useState } from 'react'
-import { Route, Routes } from 'react-router-dom'
+import { Route, Routes, useLocation } from 'react-router-dom'
 
 import { AuthProvider } from './context/AuthContext'
 import Header from './components/Header'
@@ -8,6 +8,8 @@ import CommandPalette from './components/CommandPalette'
 import ProtectedRoute from './components/ProtectedRoute'
 import PageFade from './components/PageFade'
 import OrbitMark from './components/OrbitMark'
+import AmbientBackground from './components/AmbientBackground'
+import Spotlight from './components/Spotlight'
 import Home from './pages/Home'
 import Topics from './pages/Topics'
 import Roadmap from './pages/Roadmap'
@@ -52,6 +54,8 @@ function RouteFallback() {
 export default function App() {
   const [theme, setTheme] = useState(() => getStoredTheme() || 'dark')
   const [paletteOpen, setPaletteOpen] = useState(false)
+  const location = useLocation()
+  const isOAuthPopup = new URLSearchParams(location.search).get('popup') === '1'
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', theme === 'dark')
@@ -84,8 +88,12 @@ export default function App() {
 
   return (
     <AuthProvider>
-      <div className="flex min-h-screen flex-col bg-white dark:bg-surface">
-        <Header theme={theme} onToggleTheme={toggleTheme} onOpenSearch={() => setPaletteOpen(true)} />
+      <div className="relative isolate flex min-h-screen flex-col bg-white dark:bg-surface">
+        {!isOAuthPopup && <AmbientBackground />}
+        {!isOAuthPopup && <Spotlight />}
+        {!isOAuthPopup && (
+          <Header theme={theme} onToggleTheme={toggleTheme} onOpenSearch={() => setPaletteOpen(true)} />
+        )}
         <main className="flex-1">
           <Suspense fallback={<RouteFallback />}>
             <Routes>
@@ -140,8 +148,10 @@ export default function App() {
             </Routes>
           </Suspense>
         </main>
-        <Footer />
-        <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} theme={theme} onToggleTheme={toggleTheme} />
+        {!isOAuthPopup && <Footer />}
+        {!isOAuthPopup && (
+          <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} theme={theme} onToggleTheme={toggleTheme} />
+        )}
       </div>
     </AuthProvider>
   )

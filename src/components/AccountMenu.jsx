@@ -29,8 +29,14 @@ export default function AccountMenu() {
   const [open, setOpen] = useState(false)
   const ref = useRef(null)
 
-  const name = user?.user_metadata?.name || null
+  const name =
+    user?.user_metadata?.name ||
+    user?.user_metadata?.full_name ||
+    user?.user_metadata?.user_name ||
+    user?.user_metadata?.preferred_username ||
+    null
   const email = user?.email || ''
+  const avatarUrl = user?.user_metadata?.avatar_url || user?.user_metadata?.picture || null
 
   useEffect(() => {
     if (!open) return
@@ -59,9 +65,13 @@ export default function AccountMenu() {
       <button
         onClick={() => setOpen((o) => !o)}
         aria-label="Account menu"
-        className="flex h-9 w-9 items-center justify-center rounded-full bg-accent text-xs font-semibold text-accent-fg transition active:scale-95"
+        className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-accent text-xs font-semibold text-accent-fg transition active:scale-95"
       >
-        {initialsFor(name, email)}
+        {avatarUrl ? (
+          <img src={avatarUrl} alt={name || email} className="h-full w-full object-cover" />
+        ) : (
+          initialsFor(name, email)
+        )}
       </button>
 
       <AnimatePresence>

@@ -5,6 +5,14 @@
 [build.environment]
   NODE_VERSION = "20"
 
+[functions]
+  directory = "netlify/functions"
+
+[[redirects]]
+  from = "/api/auth/oauth/exchange"
+  to = "/.netlify/functions/oauth-exchange"
+  status = 200
+
 # SPA fallback — declarative equivalent of public/_redirects, kept here too
 # so the routing rule is visible alongside the rest of the deploy config.
 [[redirects]]

@@ -1,5 +1,6 @@
-import { forwardRef, useEffect, useMemo, useState } from 'react'
-import { ArrowRight, BookOpen, Compass, Search, X } from 'lucide-react'
+import { forwardRef, useEffect, useMemo, useRef, useState } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
+import { ArrowRight, BookOpen, Check, ChevronDown, Code2, Search, X } from 'lucide-react'
 import { EXAMPLE_QUERIES, TOPIC_CATALOG } from '../utils/constants'
 import { hasBuiltInGuide } from '../services/knowledgeBase'
 import Magnetic from './Magnetic'
@@ -13,13 +14,33 @@ const ALL_TOPICS = Object.entries(TOPIC_CATALOG).flatMap(([category, topics]) =>
 const SearchBar = forwardRef(function SearchBar({ onSubmit, size = 'lg', autoFocus = false }, ref) {
   const [value, setValue] = useState('')
   const [selectedLang, setSelectedLang] = useState('All')
+  const [langMenuOpen, setLangMenuOpen] = useState(false)
   const [focused, setFocused] = useState(false)
   const [placeholderIdx, setPlaceholderIdx] = useState(0)
+  const langMenuRef = useRef(null)
 
   useEffect(() => {
     const id = setInterval(() => setPlaceholderIdx((i) => (i + 1) % EXAMPLE_QUERIES.length), 3200)
     return () => clearInterval(id)
   }, [])
+
+  useEffect(() => {
+    if (!langMenuOpen) return
+    function onDocClick(e) {
+      if (langMenuRef.current && !langMenuRef.current.contains(e.target)) {
+        setLangMenuOpen(false)
+      }
+    }
+    function onKeyDown(e) {
+      if (e.key === 'Escape') setLangMenuOpen(false)
+    }
+    document.addEventListener('mousedown', onDocClick)
+    window.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.removeEventListener('mousedown', onDocClick)
+      window.removeEventListener('keydown', onKeyDown)
+    }
+  }, [langMenuOpen])
 
   const suggestions = useMemo(() => {
     const q = value.trim().toLowerCase()
@@ -39,9 +60,14 @@ const SearchBar = forwardRef(function SearchBar({ onSubmit, size = 'lg', autoFoc
   }
 
   function submit(overrideQuery) {
-    const q = buildQuery(typeof overrideQuery === 'string' ? overrideQuery : value)
+    const raw =
+      typeof overrideQuery === 'string'
+        ? overrideQuery
+        : value.trim() || EXAMPLE_QUERIES[placeholderIdx]
+    const q = buildQuery(raw)
     if (q) {
       setFocused(false)
+      setLangMenuOpen(false)
       onSubmit(q)
     }
   }
@@ -51,22 +77,25 @@ const SearchBar = forwardRef(function SearchBar({ onSubmit, size = 'lg', autoFoc
   return (
     <div className="relative w-full">
       <div
-        className={`glass-surface flex items-center gap-2.5 rounded-2xl transition focus-within:border-black/25 focus-within:shadow-glow dark:focus-within:border-white/25 ${
-          big ? 'px-4 py-3 sm:px-5 sm:py-3.5' : 'px-3.5 py-2'
+        className={`glass-surface flex items-center gap-3 rounded-2xl transition focus-within:border-black/25 focus-within:shadow-glow dark:focus-within:border-white/25 ${
+          big ? 'px-5 py-4' : 'px-4 py-2.5'
         }`}
       >
-        <Search className="shrink-0 text-slate-400" size={big ? 20 : 17} />
+        <Search className="shrink-0 text-slate-400" size={big ? 22 : 18} />
         <input
           ref={ref}
           autoFocus={autoFocus}
           value={value}
-          onFocus={() => setFocused(true)}
+          onFocus={() => {
+            setFocused(true)
+            setLangMenuOpen(false)
+          }}
           onBlur={() => setTimeout(() => setFocused(false), 150)}
           onChange={(e) => setValue(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && submit()}
-          placeholder={`Search any topic… e.g. "${EXAMPLE_QUERIES[placeholderIdx]}"`}
+          placeholder={`e.g. "${EXAMPLE_QUERIES[placeholderIdx]}"`}
           className={`w-full bg-transparent text-slate-900 outline-none placeholder:text-slate-400 dark:text-white dark:placeholder:text-slate-500 ${
-            big ? 'text-base sm:text-lg' : 'text-sm'
+            big ? 'text-lg' : 'text-sm'
           }`}
         />
         {value && (
@@ -80,31 +109,74 @@ const SearchBar = forwardRef(function SearchBar({ onSubmit, size = 'lg', autoFoc
           </button>
         )}
         {big && (
-          <select
-            aria-label="Language filter"
-            value={selectedLang}
-            onChange={(e) => setSelectedLang(e.target.value)}
-            className="hidden shrink-0 cursor-pointer rounded-xl border border-slate-200 bg-slate-50/90 px-2.5 py-1.5 text-xs font-medium text-slate-600 outline-none transition hover:border-slate-300 dark:border-surface-border dark:bg-white/[0.05] dark:text-slate-300 sm:block"
-          >
-            {QUICK_LANGUAGES.map((lang) => (
-              <option key={lang} value={lang} className="bg-white text-slate-900 dark:bg-[#141416] dark:text-white">
-                {lang === 'All' ? 'All Languages' : lang}
-              </option>
-            ))}
-          </select>
+          <div ref={langMenuRef} className="relative hidden shrink-0 sm:block">
+            <button
+              type="button"
+              aria-label="Choose language"
+              aria-expanded={langMenuOpen}
+              onClick={() => setLangMenuOpen((o) => !o)}
+              className={`glass-surface glass-interactive flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-medium transition ${
+                selectedLang !== 'All'
+                  ? 'border-signal/40 bg-signal/10 text-signal dark:border-signal/40 dark:bg-signal/15'
+                  : 'text-slate-700 dark:text-slate-200'
+              }`}
+            >
+              <Code2 size={13} className={selectedLang !== 'All' ? 'text-signal' : 'text-slate-400'} />
+              <span>{selectedLang === 'All' ? 'All Languages' : selectedLang}</span>
+              <ChevronDown
+                size={13}
+                className={`text-slate-400 transition-transform duration-200 ${langMenuOpen ? 'rotate-180' : ''}`}
+              />
+            </button>
+
+            <AnimatePresence>
+              {langMenuOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: -6, scale: 0.97 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -4, scale: 0.97 }}
+                  transition={{ duration: 0.16, ease: [0.22, 1, 0.36, 1] }}
+                  role="listbox"
+                  aria-label="Language options"
+                  className="glass-surface absolute right-0 top-[calc(100%+8px)] z-40 min-w-[11rem] overflow-hidden rounded-2xl bg-white/95 p-1.5 text-left shadow-xl backdrop-blur-xl dark:bg-[#141416]/95"
+                >
+                  <div className="px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                    Language
+                  </div>
+                  {QUICK_LANGUAGES.map((lang) => {
+                    const active = selectedLang === lang
+                    return (
+                      <button
+                        key={lang}
+                        type="button"
+                        role="option"
+                        aria-selected={active}
+                        onClick={() => {
+                          setSelectedLang(lang)
+                          setLangMenuOpen(false)
+                        }}
+                        className={`flex w-full items-center justify-between gap-2 rounded-xl px-2.5 py-2 text-xs transition ${
+                          active
+                            ? 'bg-signal/10 font-semibold text-signal dark:bg-signal/15'
+                            : 'font-medium text-slate-700 hover:bg-black/5 dark:text-slate-300 dark:hover:bg-white/10'
+                        }`}
+                      >
+                        <span>{lang === 'All' ? 'All Languages' : lang}</span>
+                        {active && <Check size={13} className="shrink-0 text-signal" />}
+                      </button>
+                    )
+                  })}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         )}
-        {big && (
-          <kbd className="hidden shrink-0 rounded-md border border-slate-200 px-1.5 py-0.5 text-xs text-slate-400 dark:border-surface-border md:block">
-            ⌘K
-          </kbd>
-        )}
-        <Magnetic strength={big ? 0.25 : 0}>
+        <Magnetic strength={big ? 0.3 : 0}>
           <button
             type="button"
             onClick={() => submit()}
-            disabled={!value.trim()}
-            className={`flex shrink-0 items-center gap-1.5 rounded-xl bg-accent font-medium text-accent-fg transition active:scale-[0.97] hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40 ${
-              big ? 'px-5 py-2.5 text-sm sm:text-base' : 'px-3.5 py-1.5 text-sm'
+            className={`flex shrink-0 items-center gap-1.5 rounded-xl bg-accent font-medium text-accent-fg transition active:scale-[0.97] hover:opacity-90 ${
+              big ? 'px-5 py-2.5' : 'px-3.5 py-1.5 text-sm'
             }`}
           >
             Learn <ArrowRight size={16} />
@@ -146,24 +218,12 @@ const SearchBar = forwardRef(function SearchBar({ onSubmit, size = 'lg', autoFoc
       )}
 
       {big && (
-        <div className="mt-3.5 flex flex-wrap items-center justify-center gap-2">
-          <span className="text-xs font-medium text-slate-400">Try:</span>
+        <div className="mt-4 flex flex-wrap justify-center gap-2">
           {EXAMPLE_QUERIES.slice(0, 5).map((ex) => (
             <button key={ex} type="button" onClick={() => submit(ex)} className="chip text-xs">
               {ex}
             </button>
           ))}
-          <button
-            type="button"
-            onClick={() => {
-              const random = ALL_TOPICS[Math.floor(Math.random() * ALL_TOPICS.length)]
-              if (random) submit(random.topic)
-            }}
-            className="chip inline-flex items-center gap-1 border-signal/30 text-xs font-medium text-signal hover:border-signal"
-            title="Open a random DSA topic"
-          >
-            <Compass size={13} /> Surprise me
-          </button>
         </div>
       )}
     </div>

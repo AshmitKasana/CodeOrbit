@@ -197,3 +197,15 @@ html.light *::-webkit-scrollbar-thumb {
     background-size: 800px 100%;
   }
 }
+
+/* Homepage ambient background: slow drifting glow blobs (see AmbientBackground) */
+@keyframes ambientDrift {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  33% { transform: translate3d(60px, -40px, 0) scale(1.12); }
+  66% { transform: translate3d(-40px, 50px, 0) scale(0.92); }
+}
+.ambient-blob { animation: ambientDrift 24s ease-in-out infinite; will-change: transform; }
+.ambient-blob-slow { animation: ambientDrift 38s ease-in-out infinite reverse; will-change: transform; }
+@media (prefers-reduced-motion: reduce) {
+  .ambient-blob, .ambient-blob-slow { animation: none; }
+}

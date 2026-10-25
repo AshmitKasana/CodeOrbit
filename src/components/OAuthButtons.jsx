@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { AlertCircle, Github, LoaderCircle } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import GlassButton from './glass/GlassButton'
@@ -19,30 +20,12 @@ function GoogleGlyph() {
   )
 }
 
-// A crisper, more accurate Apple glyph than the previous one — still plain
-// `currentColor`, per Apple's own Sign in with Apple HIG: the mark should
-// adapt to the surrounding UI's color, not carry a fixed brand color.
-function AppleGlyph() {
-  return (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" className="shrink-0">
-      <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.36.07 2.31.75 3.09.81 1.18-.24 2.31-.94 3.57-.85 1.5.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.08ZM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25Z" />
-    </svg>
-  )
-}
-
 /**
- * Google/Apple/GitHub OAuth buttons — self-contained (owns its own loading
- * and error state) so Login and Signup can drop it in identically. Each
- * click goes through the real Supabase OAuth flow; if Supabase isn't
- * configured yet, the resulting error is shown inline rather than the
- * button silently doing nothing.
+ * Google & GitHub OAuth buttons — self-contained (owns its own loading
+ * and error state) so Login and Signup can drop it in identically.
  */
-const PROVIDER_LABEL = { google: 'Google', apple: 'Apple', github: 'GitHub' }
+const PROVIDER_LABEL = { google: 'Google', github: 'GitHub' }
 
-// Supabase answers with "Unsupported provider: provider is not enabled" (or
-// "missing OAuth secret") until a provider has been switched on and given its
-// credentials in the Supabase dashboard. That's a setup gap, not something the
-// visitor did wrong, so say so plainly and point them at what does work.
 function friendlyOAuthError(provider, message = '') {
   if (/provider is not enabled|unsupported provider|missing oauth secret/i.test(message)) {
     return `${PROVIDER_LABEL[provider]} sign-in isn't available on this site yet. Please use another option above.`
@@ -50,67 +33,68 @@ function friendlyOAuthError(provider, message = '') {
   return message
 }
 
-export default function OAuthButtons({ showGithub = false }) {
-  const { signInWithGoogle, signInWithApple, signInWithGithub, configured } = useAuth()
+export default function OAuthButtons() {
+  const { signInWithGoogle, signInWithGithub } = useAuth()
+  const navigate = useNavigate()
+  const location = useLocation()
+  const from = location.state?.from?.pathname || '/dashboard'
+
   const [loadingProvider, setLoadingProvider] = useState(null)
   const [error, setError] = useState(null)
 
   async function handle(provider, fn) {
     setError(null)
     setLoadingProvider(provider)
-    const { error } = await fn()
-    if (error) {
-      setError(friendlyOAuthError(provider, error.message))
+    try {
+      const result = await fn()
+      if (result?.error) {
+        setError(friendlyOAuthError(provider, result.error.message))
+        setLoadingProvider(null)
+        return
+      }
+      if (result?.data?.redirectPath) {
+        navigate(result.data.redirectPath, { state: { from } })
+        return
+      }
+      if (result?.data?.session && !result?.data?.url) {
+        navigate(from, { replace: true })
+        return
+      }
+      if (!result?.data?.url) {
+        setLoadingProvider(null)
+      }
+    } catch {
+      setError(`Could not sign in with ${PROVIDER_LABEL[provider] || provider}. Please try again.`)
       setLoadingProvider(null)
     }
-    // On success Supabase redirects the whole page to the provider, so there
-    // is nothing further to do here — the button just stays in a loading
-    // state until the browser navigates away.
   }
 
   return (
     <div>
-      <div className={`grid gap-2.5 ${showGithub ? 'sm:grid-cols-1' : 'sm:grid-cols-2'}`}>
+      <div className="flex flex-col gap-2.5">
         <GlassButton
           type="button"
           onClick={() => handle('google', signInWithGoogle)}
           disabled={!!loadingProvider}
-          className="w-full"
+          className="w-full whitespace-nowrap"
         >
           {loadingProvider === 'google' ? <LoaderCircle size={16} className="animate-spin" /> : <GoogleGlyph />}
           Continue with Google
         </GlassButton>
         <GlassButton
           type="button"
-          onClick={() => handle('apple', signInWithApple)}
-          disabled={!!loadingProvider}
-          className="w-full"
-        >
-          {loadingProvider === 'apple' ? <LoaderCircle size={16} className="animate-spin" /> : <AppleGlyph />}
-          Continue with Apple
-        </GlassButton>
-      </div>
-
-      {showGithub && (
-        <GlassButton
-          type="button"
           onClick={() => handle('github', signInWithGithub)}
           disabled={!!loadingProvider}
-          className="mt-2.5 w-full"
+          className="w-full whitespace-nowrap"
         >
           {loadingProvider === 'github' ? <LoaderCircle size={16} className="animate-spin" /> : <Github size={16} className="shrink-0" />}
           Continue with GitHub
         </GlassButton>
-      )}
+      </div>
 
       {error && (
         <p className="mt-3 flex items-center gap-1.5 text-xs text-red-500">
           <AlertCircle size={13} className="shrink-0" /> {error}
-        </p>
-      )}
-      {!configured && !error && (
-        <p className="mt-3 text-xs text-slate-400">
-          Social sign-in requires Supabase to be configured — see <code className="font-mono">AUTH_SETUP.md</code>.
         </p>
       )}
     </div>

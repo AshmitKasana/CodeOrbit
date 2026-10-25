@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Github, LogIn, LogOut, Menu, Search, UserPlus, X } from 'lucide-react'
+import { Github, LogOut, Menu, Search, X } from 'lucide-react'
 import ThemeToggle from './ThemeToggle'
 import OrbitMark from './OrbitMark'
 import GlassNavbar from './glass/GlassNavbar'
@@ -44,20 +44,23 @@ export default function Header({ theme, onToggleTheme, onOpenSearch }) {
 
   return (
     <GlassNavbar scrolled={scrolled}>
-      <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        <Link to="/" className="flex items-center gap-2 font-semibold text-slate-900 dark:text-white">
+      <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6 md:grid md:grid-cols-[1fr_auto_1fr] md:gap-8 lg:gap-16 lg:px-8">
+        <Link
+          to="/"
+          className="flex shrink-0 items-center gap-2 whitespace-nowrap font-semibold text-slate-900 md:justify-self-end dark:text-white"
+        >
           <OrbitMark size={20} />
           <span className="font-display text-[15px] tracking-tight">Code Orbit</span>
         </Link>
 
-        <nav className="hidden items-center gap-0.5 md:flex">
+        <nav className="hidden items-center justify-center gap-2 whitespace-nowrap md:flex md:justify-self-center">
           {NAV.map((item, i) => (
             <NavLink
               key={item.label + i}
               to={item.to}
               end={item.end}
               className={({ isActive }) =>
-                `focus-ring relative rounded-lg px-3 py-1.5 text-sm font-medium transition-colors duration-200 ${
+                `focus-ring relative whitespace-nowrap rounded-lg px-3 py-1.5 text-sm font-medium transition-colors duration-200 ${
                   isActive
                     ? 'text-slate-900 dark:text-white'
                     : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
@@ -80,33 +83,33 @@ export default function Header({ theme, onToggleTheme, onOpenSearch }) {
           ))}
         </nav>
 
-        <div className="flex items-center gap-1.5">
-          <GlassTooltip text="Search (⌘K)">
-            <button onClick={onOpenSearch} aria-label="Search" className="icon-btn hidden sm:flex">
+        <div className="flex shrink-0 items-center gap-2 whitespace-nowrap md:justify-self-start">
+          <GlassTooltip text="Search (⌘K)" side="bottom">
+            <button onClick={onOpenSearch} aria-label="Search" className="icon-btn shrink-0">
               <Search size={16} />
             </button>
           </GlassTooltip>
-          <ThemeToggle theme={theme} onToggle={onToggleTheme} />
-          <GlassTooltip text="Ashmit Kasana on GitHub">
-            <motion.a
-              href="https://github.com/AshmitKasana"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Ashmit Kasana on GitHub"
-              whileHover={{ scale: 1.08 }}
-              whileTap={{ scale: 0.94 }}
-              className="icon-btn hidden sm:flex"
-            >
-              <Github size={16} />
-            </motion.a>
-          </GlassTooltip>
 
-          <button onClick={onOpenSearch} aria-label="Search" className="icon-btn sm:hidden">
-            <Search size={16} />
-          </button>
+          <ThemeToggle theme={theme} onToggle={onToggleTheme} />
+
+          <span className="hidden shrink-0 sm:inline-flex">
+            <GlassTooltip text="Ashmit Kasana on GitHub" side="bottom">
+              <motion.a
+                href="https://github.com/AshmitKasana"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Ashmit Kasana on GitHub"
+                whileHover={{ scale: 1.08 }}
+                whileTap={{ scale: 0.94 }}
+                className="icon-btn shrink-0"
+              >
+                <Github size={16} />
+              </motion.a>
+            </GlassTooltip>
+          </span>
 
           {/* Account slot: avatar menu when signed in, Log In / Sign Up otherwise. */}
-          <div className="ml-1 hidden items-center gap-1.5 sm:flex">
+          <div className="hidden shrink-0 items-center gap-2 sm:flex">
             {loading ? (
               <span className="h-9 w-9 animate-pulse rounded-full bg-slate-200 dark:bg-white/10" />
             ) : user ? (
@@ -115,18 +118,21 @@ export default function Header({ theme, onToggleTheme, onOpenSearch }) {
               <>
                 <Link
                   to="/login"
-                  className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium text-slate-600 transition hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"
+                  className="btn-secondary h-9 shrink-0 whitespace-nowrap rounded-lg px-3.5 py-0 text-sm"
                 >
-                  <LogIn size={14} /> Log In
+                  Log In
                 </Link>
-                <Link to="/signup" className="btn-primary px-3.5 py-1.5 text-sm">
-                  <UserPlus size={14} /> Sign Up
+                <Link
+                  to="/signup"
+                  className="btn-primary h-9 shrink-0 whitespace-nowrap rounded-lg px-3.5 py-0 text-sm"
+                >
+                  Sign Up
                 </Link>
               </>
             )}
           </div>
 
-          <button onClick={() => setOpen((o) => !o)} aria-label="Toggle menu" className="icon-btn md:hidden">
+          <button onClick={() => setOpen((o) => !o)} aria-label="Toggle menu" className="icon-btn shrink-0 md:hidden">
             {open ? <X size={16} /> : <Menu size={16} />}
           </button>
         </div>
