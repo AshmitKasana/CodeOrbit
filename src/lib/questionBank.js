@@ -2,35 +2,78 @@
 // per-learner "reviewed" set. The data itself lives in data/interviewQuestions.js.
 // Everything here is pure or localStorage-backed, so it is unit tested without a browser.
 
-import { QUESTIONS, QUESTION_CATEGORIES } from '../data/interviewQuestions'
+import { JOB_ROLES, QUESTIONS, QUESTION_CATEGORIES, resolveJobRole } from '../data/interviewQuestions'
 import { scopedKey } from '../utils/helpers'
 
-export { QUESTIONS, QUESTION_CATEGORIES }
+export { JOB_ROLES, QUESTIONS, QUESTION_CATEGORIES, resolveJobRole }
 export const DIFFICULTIES = ['Easy', 'Medium', 'Hard']
 
 const REVIEWED_KEY = 'dsa-ai:reviewed-questions'
 const categoryLabel = Object.fromEntries(QUESTION_CATEGORIES.map((c) => [c.id, c.label]))
+const roleLabel = Object.fromEntries(JOB_ROLES.map((r) => [r.id, r.shortLabel]))
 
 export const getCategoryLabel = (id) => categoryLabel[id] || id
+export const getRoleLabel = (id) => roleLabel[id] || id
 
 /**
- * Filters questions by category, difficulty, free-text search and review state.
- * Every whitespace-separated search term must appear somewhere in the question,
- * its answers, tip or category name (case-insensitive).
+ * Filters questions by category (DSA topic), custom typed DSA topic query,
+ * job role (preset id or custom typed role), difficulty, company, free-text search and review state.
  */
 export function filterQuestions(
   questions,
-  { category = 'all', difficulty = 'all', query = '', unreviewedOnly = false, reviewed = [] } = {}
+  {
+    category = 'all',
+    topicQuery = '',
+    role = 'all',
+    difficulty = 'all',
+    company = 'all',
+    query = '',
+    unreviewedOnly = false,
+    reviewed = [],
+  } = {}
 ) {
   const terms = query.toLowerCase().split(/\s+/).filter(Boolean)
+  const topicTerms = topicQuery.toLowerCase().split(/\s+/).filter(Boolean)
+  const resolvedRole = resolveJobRole(role)
   const done = new Set(reviewed)
 
   return questions.filter((item) => {
     if (category !== 'all' && item.category !== category) return false
+    if (resolvedRole && !(item.roles || []).includes(resolvedRole.id)) return false
     if (difficulty !== 'all' && item.difficulty !== difficulty) return false
+    if (company !== 'all' && !(item.companies || []).includes(company)) return false
     if (unreviewedOnly && done.has(item.id)) return false
+
+    if (topicTerms.length > 0) {
+      const topicHaystack = [
+        item.topic,
+        item.pattern,
+        getCategoryLabel(item.category),
+        item.question,
+        item.shortAnswer,
+        item.leetcode?.title,
+      ]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase()
+      if (!topicTerms.every((t) => topicHaystack.includes(t))) return false
+    }
+
     if (terms.length === 0) return true
-    const haystack = [item.question, item.shortAnswer, item.detailedAnswer, item.tip, getCategoryLabel(item.category)]
+    const haystack = [
+      item.question,
+      item.shortAnswer,
+      item.detailedAnswer,
+      item.tip,
+      item.pattern,
+      item.topic,
+      item.followUp,
+      item.leetcode ? `lc ${item.leetcode.id} ${item.leetcode.title}` : '',
+      ...(item.companies || []),
+      ...(item.roles || []).map(getRoleLabel),
+      getCategoryLabel(item.category),
+    ]
+      .filter(Boolean)
       .join(' ')
       .toLowerCase()
     return terms.every((term) => haystack.includes(term))

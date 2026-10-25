@@ -5,6 +5,10 @@
 // ids are generated as `${category}-${n}` and must stay stable (learners' review
 // progress is stored against them), so only append to a category, never reorder.
 
+import { INTERVIEW_ENRICHMENT, JOB_ROLES, resolveJobRole } from './interviewEnrichment'
+
+export { JOB_ROLES, resolveJobRole }
+
 export const QUESTION_CATEGORIES = [
   { id: 'complexity', label: 'Complexity & Basics' },
   { id: 'arrays', label: 'Arrays & Strings' },
@@ -23,7 +27,9 @@ export const QUESTION_CATEGORIES = [
 const counters = {}
 const q = (category, difficulty, question, shortAnswer, detailedAnswer, tip) => {
   counters[category] = (counters[category] || 0) + 1
-  return { id: `${category}-${counters[category]}`, category, difficulty, question, shortAnswer, detailedAnswer, tip }
+  const id = `${category}-${counters[category]}`
+  const extra = INTERVIEW_ENRICHMENT[id] || {}
+  return { id, category, difficulty, question, shortAnswer, detailedAnswer, tip, ...extra }
 }
 
 export const QUESTIONS = [

@@ -1,5 +1,7 @@
+import { TOPIC_CATALOG } from '../utils/constants'
+import { QUESTIONS } from '../data/interviewQuestions'
 import { slugify } from '../utils/helpers'
-import { GUIDE_ENTRIES } from './guideLessons'
+import { GUIDE_ENTRIES, buildPracticeSet } from './guideLessons'
 
 // ---------------------------------------------------------------------------
 // This file is the mock "AI" knowledge base used by aiService.js when no real
@@ -122,7 +124,7 @@ const pointers = {
         tip: 'Mention smart pointers proactively — it signals modern C++ knowledge.',
       },
     ],
-    practiceProblems: buildGenericPractice('pointers and references'),
+    practiceProblems: buildPracticeSet({ id: 'pointers', questionCategory: 'complexity', keys: ['pointer', 'pointers', 'reference'] }),
     relatedTopics: ['References', 'Stack vs Heap', 'Objects', 'Garbage Collection', 'Arrays', 'Memory Management', 'C/C++ Pointers', 'Pass by Value', 'Pass by Reference'],
     languageNote: (language) =>
       language === 'Java'
@@ -186,7 +188,7 @@ const arrays = {
       { question: 'Why is array access O(1)?', shortAnswer: 'The address of any element is computed directly from the index.', detailedAnswer: 'address = base + index * elementSize — no traversal required, unlike a linked list.', tip: 'Mention the formula explicitly.' },
       { question: 'How does a dynamic array grow?', shortAnswer: 'It allocates a larger backing array and copies elements over.', detailedAnswer: 'Most implementations double capacity when full, giving amortized O(1) append despite occasional O(n) copies.', tip: 'Use the word "amortized" — it signals rigor.' },
     ],
-    practiceProblems: buildGenericPractice('arrays'),
+    practiceProblems: buildPracticeSet({ id: 'arrays', questionCategory: 'arrays', keys: ['array', 'arrays'] }),
     relatedTopics: ['Strings', 'Dynamic Array', 'Two Pointers', 'Sliding Window', 'Sorting', 'Hash Table'],
   }),
 }
@@ -244,29 +246,18 @@ const linkedList = {
       { question: 'Array vs linked list — when would you pick each?', shortAnswer: 'Array for random access and cache performance; linked list for frequent insert/delete at known positions.', detailedAnswer: 'Arrays win when you need O(1) indexed access or iterate sequentially (cache locality); linked lists win when you frequently insert/remove in the middle and already hold a node reference (e.g., LRU cache, adjacency list).', tip: 'Always mention cache locality — it is the subtlety most candidates miss.' },
       { question: 'How do you detect a cycle in a linked list?', shortAnswer: "Floyd's tortoise and hare (slow/fast pointers).", detailedAnswer: 'Move one pointer one step and another two steps per iteration; if they meet, a cycle exists. O(n) time, O(1) space, superior to a hash-set approach which needs O(n) space.', tip: 'Mention the O(1) space advantage over the hash-set approach.' },
     ],
-    practiceProblems: buildGenericPractice('linked lists'),
+    practiceProblems: buildPracticeSet({ id: 'linked-list', questionCategory: 'linked-lists', keys: ['linked list', 'linked lists'] }),
     relatedTopics: ['Arrays', 'Stack', 'Queue', 'Doubly Linked List', 'Cycle Detection', 'Pointers', 'Recursion'],
   }),
 }
 
 function buildGenericPractice(topicLabel) {
-  const mk = (n, difficulty) => ({
-    title: `${difficulty} Problem ${n}: ${topicLabel}`,
-    statement: `Given the concepts of ${topicLabel}, solve a representative ${difficulty.toLowerCase()}-difficulty problem (see hint for direction).`,
-    input: 'Described per-problem in a real dataset/array/string input.',
-    output: 'The expected transformed value, boolean, or computed result.',
-    constraints: '1 <= n <= 10^5 (typical competitive-programming bound)',
-    example: 'Input: [example input]\nOutput: [example output]',
-    hint: `Think about the core property of ${topicLabel} that makes an efficient solution possible.`,
-    solution: `// A worked solution would apply the standard ${topicLabel} technique here.`,
-    explanation: `The efficient approach leverages the defining trait of ${topicLabel} instead of a brute-force scan.`,
-    complexity: difficulty === 'Easy' ? 'O(n)' : difficulty === 'Medium' ? 'O(n log n)' : 'O(n^2) or better with optimization',
-  })
-  return {
-    easy: [1, 2, 3, 4, 5].map((n) => mk(n, 'Easy')),
-    medium: [1, 2, 3, 4, 5].map((n) => mk(n, 'Medium')),
-    hard: [1, 2, 3, 4, 5].map((n) => mk(n, 'Hard')),
+  const lower = (topicLabel || '').toLowerCase()
+  const matched = buildPracticeSet({ id: slugify(lower), keys: [lower] })
+  if (matched.easy.length || matched.medium.length || matched.hard.length) {
+    return matched
   }
+  return buildPracticeSet({ id: 'arrays', questionCategory: 'arrays', keys: ['array', 'arrays'] })
 }
 
 // Specific pattern guides come first so e.g. "two pointers" is never mistaken
@@ -286,12 +277,189 @@ export function findEntry(topic) {
     if (entry.exclude?.some((word) => matchesKey(t, word))) continue
     if (entry.keys.some((key) => matchesKey(t, key))) return entry
   }
+  // Secondary match: problem titles inside built-in guides (e.g. "Koko Eating Bananas", "Rotting Oranges")
+  for (const entry of GUIDE_ENTRIES) {
+    if (entry.guide?.problems?.some((p) => matchesKey(t, p.title.toLowerCase()))) {
+      return entry
+    }
+  }
+  // Tertiary match: canonical LeetCode problem titles in the interview bank (e.g. "Two Sum", "Trapping Rain Water")
+  const matchedQuestion = QUESTIONS.find(
+    (q) => q.leetcode && (matchesKey(t, q.leetcode.title.toLowerCase()) || matchesKey(t, `lc ${q.leetcode.id}`))
+  )
+  if (matchedQuestion?.topic) {
+    const target = matchedQuestion.topic.toLowerCase()
+    for (const entry of ENTRIES) {
+      if (entry.keys.some((key) => matchesKey(target, key))) return entry
+    }
+  }
   return null
+}
+
+const TOPIC_HOOKS = {
+  'Programming Basics': 'Variables, control flow, functions, stack vs heap memory, and pass-by-value vs reference.',
+  'Big O Notation': 'Measure how an algorithm’s runtime and memory scale as the input size grows.',
+  Arrays: 'Contiguous memory slots with O(1) index lookup.',
+  Strings: 'Immutable or mutable character sequences and pattern matching.',
+  'Linked List': 'Nodes chained by pointers for O(1) insertion and removal.',
+  Stack: 'Last-in, first-out (LIFO) — like a stack of plates.',
+  Queue: 'First-in, first-out (FIFO) — like a line at a ticket counter.',
+  Deque: 'Double-ended queue supporting O(1) push and pop at both ends.',
+  'Hash Table': 'Key-to-value lookup in O(1) average time via a hash function.',
+  Trees: 'Hierarchical parent-child nodes starting from a root.',
+  'Binary Tree': 'Each node has at most two children: left and right.',
+  'Binary Search Tree': 'Left subtree is smaller, right subtree is larger — O(log n) lookup.',
+  Graphs: 'Nodes (vertices) connected by edges to model networks.',
+  'Disjoint Set': 'Track connected components in near-constant time with path compression.',
+  'Segment Tree': 'Range queries and point updates in O(log n) time.',
+  'Segment Trees': 'Range queries and point updates in O(log n) time.',
+  'Fenwick Tree': 'Compact prefix-sum tree using binary index bit tricks.',
+  Searching: 'Locate a target element across sorted or unsorted data.',
+  Sorting: 'Arrange elements in order to unlock binary search and greedy strategies.',
+  'Linear Search': 'Check each element one by one from start to finish.',
+  'Bubble Sort': 'Repeatedly swap adjacent out-of-order elements.',
+  'Selection Sort': 'Repeatedly pick the smallest remaining element.',
+  'Insertion Sort': 'Insert each item into its sorted spot, like sorting playing cards.',
+  'Merge Sort': 'Divide in half, sort each half, and merge in O(n log n).',
+  'Quick Sort': 'Partition around a pivot and recursively sort both sides.',
+  'Heap Sort': 'Use a max-heap to extract the largest element each step.',
+  'Counting Sort': 'Count occurrences of each key — O(n + k) without comparisons.',
+  'Radix Sort': 'Sort numbers digit by digit from least to most significant.',
+  Recursion: 'A function solving a problem by calling itself on a smaller input.',
+  'Divide and Conquer': 'Split into independent subproblems, solve, and combine.',
+  Greedy: 'Make the locally optimal choice at each step toward a global optimum.',
+  'Greedy Algorithms': 'Make the locally optimal choice at each step.',
+  'Graph Algorithms': 'Traverse, connect, and find shortest paths across networks.',
+  'String Algorithms': 'Fast pattern matching, hashing, and substring search.',
+  'Binary Tree Traversals': 'Visit every node systematically via inorder, preorder, postorder, or level-order.',
+  'Lowest Common Ancestor': 'Find the deepest shared ancestor of two nodes in a tree.',
+  'AVL Tree': 'Self-balancing BST that keeps subtree heights within 1 using rotations.',
+  'Red-Black Tree': 'Color-balanced BST guaranteeing O(log n) search, insert, and delete.',
+  'Minimum Spanning Tree': 'Connect all vertices with the minimum total edge weight and no cycles.',
+  'Shortest Path Algorithms': 'Find the minimum-cost route between nodes in weighted or unweighted graphs.',
+  'Bipartite Graph': 'Two-color a graph so no edge connects vertices of the same color.',
+  'Cycle Detection': 'Spot loops in linked lists or directed/undirected graphs.',
+  Memoization: 'Cache function results so identical subproblems run only once.',
+  Tabulation: 'Fill a DP table bottom-up from the smallest base cases.',
+  'Memoization vs Tabulation': 'Top-down recursion with caching vs bottom-up table filling.',
+  'Knapsack Problem': 'Maximize value within a weight limit — the classic DP model.',
+  'Longest Common Subsequence': 'Find the longest sequence of characters appearing in order in two strings.',
+  'Longest Increasing Subsequence': 'Find the longest strictly increasing subsequence in O(n log n).',
+  'Edit Distance': 'Minimum insertions, deletions, and replacements to transform one string into another.',
+  'Coin Change': 'Fewest coins or total ways to make a target amount using DP.',
+  'Matrix Chain Multiplication': 'Choose parenthesizations to minimize scalar multiplications.',
+  'Climbing Stairs': 'Count distinct ways to reach the top — the Fibonacci DP pattern.',
+  'Bellman-Ford': 'Single-source shortest paths that handle negative edge weights and detect negative cycles.',
+  'Floyd-Warshall': 'All-pairs shortest paths in O(V³) via dynamic programming.',
+  "Kruskal's Algorithm": 'Build a Minimum Spanning Tree by sorting edges and uniting components.',
+  "Prim's Algorithm": 'Grow a Minimum Spanning Tree outward from a start node using a min-heap.',
+  'KMP Algorithm': 'Linear-time string matching using a prefix-suffix fallback table.',
+  'Rabin-Karp': 'Rolling-hash string search that compares substring fingerprints in O(1).',
+  "Tarjan's Algorithm": 'Find strongly connected components and bridges in a single DFS pass.',
+}
+
+/** Returns a concise 1-line concept hook or analogy for a topic. */
+export function getTopicHook(topic) {
+  const entry = findEntry(topic)
+  if (entry?.guide?.analogy) return entry.guide.analogy
+  if (entry?.guide?.summary) return entry.guide.summary
+  return TOPIC_HOOKS[topic] || null
 }
 
 /** True when the offline knowledge base has a hand-written lesson for this topic. */
 export function hasBuiltInGuide(topic) {
   return findEntry(topic) !== null
+}
+
+/**
+ * Unified world-DSA search across all catalog topics, encyclopedia guides,
+ * keywords, and canonical LeetCode / interview problems.
+ */
+export function searchAllDSA(rawQuery, limit = 8) {
+  const q = (rawQuery || '').trim().toLowerCase()
+  if (!q) return []
+
+  const results = []
+  const seen = new Set()
+
+  // 1. Catalog topics
+  for (const [category, topics] of Object.entries(TOPIC_CATALOG)) {
+    for (const topic of topics) {
+      const entry = findEntry(topic)
+      const hook = getTopicHook(topic) || entry?.guide?.summary || ''
+      const complexity = entry?.guide?.complexity?.average || ''
+      const hay = `${topic} ${category} ${hook} ${(entry?.keys || []).join(' ')}`.toLowerCase()
+      if (hay.includes(q)) {
+        const key = `topic:${topic.toLowerCase()}`
+        if (!seen.has(key)) {
+          seen.add(key)
+          results.push({
+            id: key,
+            type: 'topic',
+            title: topic,
+            query: topic,
+            category,
+            hook,
+            complexity,
+            score: topic.toLowerCase().startsWith(q) ? 100 : topic.toLowerCase().includes(q) ? 85 : 65,
+          })
+        }
+      }
+    }
+  }
+
+  // 2. Encyclopedia & Pattern Guides (catches extra keywords like "Bloom Filter", "Consistent Hashing", "LRU Cache", "Quickselect", "B+ Tree")
+  for (const entry of GUIDE_ENTRIES) {
+    const g = entry.guide
+    if (!g) continue
+    const matchedKeyword = entry.keys.find((k) => k.includes(q) || q.includes(k))
+    const hay = `${g.title} ${entry.keys.join(' ')} ${g.summary} ${g.analogy}`.toLowerCase()
+    if (hay.includes(q)) {
+      const displayTitle =
+        matchedKeyword && !g.title.toLowerCase().includes(q)
+          ? `${matchedKeyword.replace(/\b\w/g, (c) => c.toUpperCase())} (${g.title})`
+          : g.title
+      const key = `topic:${g.title.toLowerCase()}`
+      if (!seen.has(key)) {
+        seen.add(key)
+        results.push({
+          id: `guide:${g.id}`,
+          type: 'guide',
+          title: displayTitle,
+          query: matchedKeyword || g.title,
+          category: 'DSA Encyclopedia',
+          hook: g.summary,
+          complexity: g.complexity?.average || '',
+          score: g.title.toLowerCase().startsWith(q) ? 95 : matchedKeyword ? 88 : 60,
+        })
+      }
+    }
+  }
+
+  // 3. Real Interview & LeetCode Problems
+  for (const item of QUESTIONS) {
+    const lcLabel = item.leetcode ? `LC #${item.leetcode.id}: ${item.leetcode.title}` : item.question
+    const hay = `${lcLabel} ${item.question} ${item.pattern || ''} ${item.shortAnswer} ${(item.companies || []).join(' ')}`.toLowerCase()
+    if (hay.includes(q)) {
+      const key = `question:${item.id}`
+      if (!seen.has(key)) {
+        seen.add(key)
+        results.push({
+          id: key,
+          type: 'problem',
+          title: lcLabel,
+          query: item.topic || item.leetcode?.title || item.question,
+          interviewFilter: item.leetcode?.title || item.question,
+          category: item.pattern || 'Interview Problem',
+          hook: item.shortAnswer,
+          complexity: item.complexity?.time || '',
+          score: lcLabel.toLowerCase().includes(q) ? 80 : 55,
+        })
+      }
+    }
+  }
+
+  return results.sort((a, b) => b.score - a.score).slice(0, limit)
 }
 
 export { buildGenericPractice }

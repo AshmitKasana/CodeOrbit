@@ -37,19 +37,13 @@ export const LANGUAGE_ALIASES = {
 export const EXPLANATION_LEVELS = ['Beginner', 'Intermediate', 'Advanced', 'Interview']
 
 export const SIDEBAR_SECTIONS = [
-  { id: 'overview', label: 'Overview' },
-  { id: 'core-concept', label: 'Core Concept' },
-  { id: 'syntax', label: 'Syntax' },
-  { id: 'how-it-works', label: 'How It Works' },
-  { id: 'memory', label: 'Memory / Internal Working' },
-  { id: 'examples', label: 'Examples' },
-  { id: 'visual', label: 'Visual Explanation' },
-  { id: 'complexity', label: 'Complexity' },
-  { id: 'comparison', label: 'Language Comparison' },
-  { id: 'mistakes', label: 'Common Mistakes' },
-  { id: 'interview', label: 'Interview Questions' },
-  { id: 'practice', label: 'Practice Problems' },
-  { id: 'related', label: 'Related Topics' },
+  { id: 'big-idea', label: 'The big idea' },
+  { id: 'explanation', label: 'The concept' },
+  { id: 'walkthrough', label: 'Step by step' },
+  { id: 'code', label: 'See it in code' },
+  { id: 'complexity', label: 'How fast is it?' },
+  { id: 'deeper', label: 'Go deeper' },
+  { id: 'related', label: 'Where to go next' },
 ]
 
 export const TOPIC_CATALOG = {
@@ -60,12 +54,12 @@ export const TOPIC_CATALOG = {
   ],
   'Algorithms': [
     'Searching', 'Sorting', 'Recursion', 'Backtracking', 'Greedy',
-    'Divide and Conquer', 'Dynamic Programming', 'Graph Algorithms', 'String Algorithms',
+    'Divide and Conquer', 'Graph Algorithms', 'String Algorithms',
   ],
   'Patterns & Techniques': [
     'Two Pointers', 'Sliding Window', 'Prefix Sum', 'Binary Search', 'Monotonic Stack',
     'Bit Manipulation', 'Fast & Slow Pointers', 'Merge Intervals',
-    'Top K Elements', "Kadane's Algorithm", 'Binary Search on Answer',
+    'Top K Elements', "Kadane's Algorithm", 'Binary Search on Answer', 'Cyclic Sort',
   ],
   'Graphs & Trees': [
     'BFS', 'DFS', 'Topological Sort', 'Union-Find', 'Binary Tree Traversals',
@@ -79,8 +73,7 @@ export const TOPIC_CATALOG = {
   ],
   'Advanced': [
     "Dijkstra's Algorithm", 'Bellman-Ford', 'Floyd-Warshall', "Kruskal's Algorithm",
-    "Prim's Algorithm", 'KMP Algorithm', 'Rabin-Karp',
-    "Tarjan's Algorithm", 'Segment Trees',
+    "Prim's Algorithm", 'KMP Algorithm', 'Rabin-Karp', "Tarjan's Algorithm",
   ],
 }
 

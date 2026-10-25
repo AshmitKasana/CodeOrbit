@@ -2,14 +2,14 @@ import { useEffect, useMemo, useState } from 'react'
 import { useLocation, useParams } from 'react-router-dom'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
-import {
-  AlertOctagon, BookOpen, Boxes, Braces, Cpu, GitCompareArrows,
-  ListChecks, MessageCircleQuestion, Network, PenTool, Workflow,
-} from 'lucide-react'
+import { BookOpen, Code2, Cpu, Footprints, Layers, Network, Play } from 'lucide-react'
 
 import TopicSidebar, { MobileTopicNav } from '../components/TopicSidebar'
 import TopicHeader from '../components/TopicHeader'
 import ExplanationSection from '../components/ExplanationSection'
+import BigIdea from '../components/BigIdea'
+import StepWalkthrough from '../components/StepWalkthrough'
+import DeeperTabs from '../components/DeeperTabs'
 import CodeBlock from '../components/CodeBlock'
 import LanguageTabs from '../components/LanguageTabs'
 import ComplexityCard from '../components/ComplexityCard'
@@ -28,6 +28,7 @@ import { useTopic } from '../hooks/useTopic'
 import { useAuth } from '../hooks/useAuth'
 import { refreshQuota } from '../services/aiService'
 import { unslugify, isBookmarked, toggleBookmark } from '../utils/helpers'
+import { getLessonExtras } from '../utils/lessonExtras'
 
 export default function Learn() {
   const { topic: slug } = useParams()
@@ -39,9 +40,11 @@ export default function Learn() {
   const { status, stageIndex, result, error, limit, retry, conversation, askFollowUp, followUpLoading } = useTopic(rawQuery, level)
   const [bookmarked, setBookmarked] = useState(false)
   const [exampleLang, setExampleLang] = useState(null)
+  const [showPlayground, setShowPlayground] = useState(false)
 
   useEffect(() => {
     window.scrollTo({ top: 0 })
+    setShowPlayground(false)
   }, [slug])
 
   // Show the "AI lessons left today" badge as soon as the page opens (no quota is consumed).
@@ -56,6 +59,7 @@ export default function Learn() {
     }
   }, [result, user?.id])
 
+  const extras = useMemo(() => getLessonExtras(result), [result])
   const exampleLanguages = useMemo(() => [...new Set((result?.examples || []).map((e) => e.language))], [result])
   const activeExamples = useMemo(() => (result?.examples || []).filter((e) => e.language === exampleLang), [result, exampleLang])
 
@@ -70,135 +74,150 @@ export default function Learn() {
   if (status === 'limit') return <LimitReached quota={limit?.quota} signedIn={Boolean(user) || Boolean(limit?.signedIn)} />
   if (!result) return null
 
+  const lvl = level.toLowerCase()
+  const hasVisual = result.visual && result.visual.type !== 'none'
+  const diagram = hasVisual ? <Diagram visual={result.visual} /> : null
+
+  const deeperTabs = [
+    {
+      id: 'mistakes',
+      label: 'Common mistakes',
+      content: result.commonMistakes?.length > 0 && (
+        <div className="space-y-3">
+          {result.commonMistakes.map((m, i) => (
+            <div key={i} className="card p-4">
+              <p className="font-medium text-slate-900 dark:text-white">{m.mistake}</p>
+              <p className="prose-dsa mt-1 text-sm">{m.explanation}</p>
+            </div>
+          ))}
+        </div>
+      ),
+    },
+    {
+      id: 'interview',
+      label: 'Interview questions',
+      content: result.interviewQuestions?.length > 0 && (
+        <div className="space-y-3">
+          {result.interviewQuestions.map((q, i) => (
+            <InterviewQuestion key={i} item={q} index={i} />
+          ))}
+        </div>
+      ),
+    },
+    {
+      id: 'practice',
+      label: 'Practice problems',
+      content: result.practiceProblems && (
+        <div className="space-y-8">
+          {['easy', 'medium', 'hard'].map((diff) =>
+            result.practiceProblems[diff]?.length ? (
+              <div key={diff}>
+                <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{diff}</h3>
+                <div className="space-y-3">
+                  {result.practiceProblems[diff].map((p, i) => (
+                    <PracticeCard key={i} problem={p} difficulty={diff.charAt(0).toUpperCase() + diff.slice(1)} />
+                  ))}
+                </div>
+              </div>
+            ) : null
+          )}
+        </div>
+      ),
+    },
+    {
+      id: 'syntax',
+      label: 'Syntax',
+      content: result.syntax && Object.keys(result.syntax).length > 0 && (
+        <div className="space-y-4">
+          {Object.entries(result.syntax).map(([lang, lines]) => (
+            <div key={lang}>
+              <p className="mb-1.5 text-sm font-medium text-slate-500 dark:text-slate-400">{lang}</p>
+              <CodeBlock code={Array.isArray(lines) ? lines.join('\n') : String(lines)} language={lang} />
+            </div>
+          ))}
+        </div>
+      ),
+    },
+    {
+      id: 'memory',
+      label: 'Under the hood',
+      content: result.memoryConcept && <Markdown text={result.memoryConcept} />,
+    },
+    {
+      id: 'comparison',
+      label: 'Across languages',
+      content: result.languageComparison?.rows?.length > 0 && <ComparisonTable comparison={result.languageComparison} />,
+    },
+  ]
+
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <MobileTopicNav />
       <div className="flex gap-10">
         <TopicSidebar />
-        <div className="min-w-0 flex-1">
-          <TopicHeader
-            result={result}
-            level={level}
-            onLevelChange={setLevel}
-            bookmarked={bookmarked}
-            onToggleBookmark={handleBookmark}
-          />
+        <div className="min-w-0 max-w-3xl flex-1">
+          <TopicHeader result={result} level={level} onLevelChange={setLevel} bookmarked={bookmarked} onToggleBookmark={handleBookmark} />
 
-          <ExplanationSection id="overview" icon={BookOpen} title="Overview">
-            <Markdown text={result.overview?.[level.toLowerCase()] || result.overview?.beginner} />
-          </ExplanationSection>
+          <BigIdea analogy={extras.analogy} takeaways={extras.takeaways} />
 
-          <ExplanationSection id="core-concept" icon={Cpu} title="Core Concept">
-            <Markdown text={result.coreConcept?.[level.toLowerCase()] || result.coreConcept?.beginner} />
-          </ExplanationSection>
-
-          {result.syntax && Object.keys(result.syntax).length > 0 && (
-            <ExplanationSection id="syntax" icon={Braces} title="Syntax">
-              <div className="space-y-4">
-                {Object.entries(result.syntax).map(([lang, lines]) => (
-                  <div key={lang}>
-                    <p className="mb-1.5 text-sm font-medium text-slate-500 dark:text-slate-400">{lang}</p>
-                    <CodeBlock code={Array.isArray(lines) ? lines.join('\n') : String(lines)} language={lang} />
-                  </div>
-                ))}
+          <ExplanationSection id="explanation" icon={BookOpen} title="The concept">
+            <Markdown text={result.overview?.[lvl] || result.overview?.beginner} />
+            {(result.coreConcept?.[lvl] || result.coreConcept?.beginner) && (
+              <div className="mt-5 rounded-xl border-l-2 border-signal/60 bg-slate-50 py-3 pl-4 pr-3 dark:bg-white/[0.03]">
+                <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-slate-400">Why it matters</p>
+                <Markdown text={result.coreConcept?.[lvl] || result.coreConcept?.beginner} />
               </div>
-            </ExplanationSection>
-          )}
-
-          <ExplanationSection id="how-it-works" icon={Workflow} title="How It Works">
-            <Markdown text={result.howItWorks} />
+            )}
           </ExplanationSection>
 
-          <ExplanationSection id="memory" icon={Boxes} title="Memory / Internal Working">
-            <Markdown text={result.memoryConcept} />
+          <ExplanationSection id="walkthrough" icon={Footprints} title="Step by step">
+            {extras.walkthrough.length > 0 ? (
+              <StepWalkthrough steps={extras.walkthrough} aside={diagram} />
+            ) : (
+              <>
+                <Markdown text={result.howItWorks} />
+                {diagram && <div className="card mt-5 overflow-hidden p-4">{diagram}</div>}
+              </>
+            )}
           </ExplanationSection>
 
           {activeExamples.length > 0 && (
-            <ExplanationSection id="examples" icon={PenTool} title="Examples">
-              <div className="mb-4">
-                <LanguageTabs languages={exampleLanguages} active={exampleLang} onChange={setExampleLang} />
-              </div>
+            <ExplanationSection id="code" icon={Code2} title="See it in code">
+              {exampleLanguages.length > 1 && (
+                <div className="mb-4">
+                  <LanguageTabs languages={exampleLanguages} active={exampleLang} onChange={setExampleLang} />
+                </div>
+              )}
               <div className="space-y-6">
                 {activeExamples.map((ex, i) => (
                   <div key={i}>
                     <p className="mb-2 font-medium text-slate-800 dark:text-slate-100">{ex.title}</p>
                     <CodeBlock code={ex.code} language={ex.language} collapsible />
-                    <p className="prose-dsa mt-2 text-sm">{ex.explanation}</p>
+                    {ex.explanation && <p className="prose-dsa mt-2 text-sm">{ex.explanation}</p>}
                   </div>
                 ))}
               </div>
               <div className="mt-6">
-                <p className="mb-2 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-                  Interactive Playground
-                </p>
-                <CodePlayground examples={result.examples} />
+                {showPlayground ? (
+                  <CodePlayground examples={result.examples} />
+                ) : (
+                  <button type="button" onClick={() => setShowPlayground(true)} className="btn-secondary">
+                    <Play size={14} /> Try it yourself in the playground
+                  </button>
+                )}
               </div>
             </ExplanationSection>
           )}
 
-          <ExplanationSection id="visual" icon={Network} title="Visual Explanation">
-            {result.visual && result.visual.type !== 'none' ? (
-              <div className="card overflow-hidden p-4">
-                <Diagram visual={result.visual} />
-              </div>
-            ) : (
-              <p className="text-sm text-slate-400">No diagram-style visualization applies to this topic.</p>
-            )}
-          </ExplanationSection>
-
-          <ExplanationSection id="complexity" icon={Cpu} title="Complexity">
+          <ExplanationSection id="complexity" icon={Cpu} title="How fast is it?">
             <ComplexityCard complexity={result.complexity} />
           </ExplanationSection>
 
-          {result.languageComparison?.rows?.length > 0 && (
-            <ExplanationSection id="comparison" icon={GitCompareArrows} title="Language Comparison">
-              <ComparisonTable comparison={result.languageComparison} />
-            </ExplanationSection>
-          )}
+          <ExplanationSection id="deeper" icon={Layers} title="Go deeper">
+            <DeeperTabs tabs={deeperTabs} />
+          </ExplanationSection>
 
-          {result.commonMistakes?.length > 0 && (
-            <ExplanationSection id="mistakes" icon={AlertOctagon} title="Common Mistakes">
-              <div className="space-y-3">
-                {result.commonMistakes.map((m, i) => (
-                  <div key={i} className="card p-4">
-                    <p className="font-medium text-slate-900 dark:text-white">{m.mistake}</p>
-                    <p className="prose-dsa mt-1 text-sm">{m.explanation}</p>
-                  </div>
-                ))}
-              </div>
-            </ExplanationSection>
-          )}
-
-          {result.interviewQuestions?.length > 0 && (
-            <ExplanationSection id="interview" icon={MessageCircleQuestion} title="Interview Questions">
-              <div className="space-y-3">
-                {result.interviewQuestions.map((q, i) => (
-                  <InterviewQuestion key={i} item={q} index={i} />
-                ))}
-              </div>
-            </ExplanationSection>
-          )}
-
-          {result.practiceProblems && (
-            <ExplanationSection id="practice" icon={ListChecks} title="Practice Problems">
-              <div className="space-y-8">
-                {['easy', 'medium', 'hard'].map((diff) => (
-                  <div key={diff}>
-                    <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-                      {diff}
-                    </h3>
-                    <div className="space-y-3">
-                      {result.practiceProblems[diff]?.map((p, i) => (
-                        <PracticeCard key={i} problem={p} difficulty={diff.charAt(0).toUpperCase() + diff.slice(1)} />
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </ExplanationSection>
-          )}
-
-          <ExplanationSection id="related" icon={Network} title="Related Topics">
+          <ExplanationSection id="related" icon={Network} title="Where to go next">
             <RelatedTopics topics={result.relatedTopics} />
           </ExplanationSection>
 

@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import {
   DIFFICULTIES,
+  JOB_ROLES,
   QUESTIONS,
   QUESTION_CATEGORIES,
   clearReviewed,
@@ -10,6 +11,7 @@ import {
   pickQuizQuestion,
   questionStats,
   questionsForCategory,
+  resolveJobRole,
   setReviewed,
   toggleReviewed,
 } from './questionBank'
@@ -57,6 +59,22 @@ describe('filterQuestions', () => {
     const unreviewed = filterQuestions(arraysEasy, { unreviewedOnly: true, reviewed: [firstId] })
     expect(unreviewed).toHaveLength(arraysEasy.length - 1)
     expect(unreviewed.some((q) => q.id === firstId)).toBe(false)
+
+    const googleQuestions = filterQuestions(QUESTIONS, { company: 'Google' })
+    expect(googleQuestions.length).toBeGreaterThan(0)
+    expect(googleQuestions.every((q) => q.companies?.includes('Google'))).toBe(true)
+
+    for (const role of JOB_ROLES) {
+      const byRole = filterQuestions(QUESTIONS, { role: role.id })
+      expect(byRole.length).toBeGreaterThan(0)
+      expect(byRole.every((q) => q.roles?.includes(role.id))).toBe(true)
+    }
+
+    // Custom typed role & custom typed DSA topic
+    expect(resolveJobRole('Android Developer')?.id).toBe('mobile')
+    expect(resolveJobRole('Kubernetes SRE')?.id).toBe('devops-sre')
+    const mobileSliding = filterQuestions(QUESTIONS, { role: 'Android Developer', topicQuery: 'Sliding Window' })
+    expect(mobileSliding.length).toBeGreaterThan(0)
   })
 })
 

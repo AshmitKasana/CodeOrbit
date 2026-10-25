@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Check, CircleDashed, Loader2 } from 'lucide-react'
 import { ROADMAP } from '../utils/constants'
+import { getTopicHook } from '../services/knowledgeBase'
 import { getRoadmapProgress, setRoadmapStatus, slugify } from '../utils/helpers'
 import { recordActivity } from '../lib/progress'
 import Reveal, { revealItem } from '../components/Reveal'
@@ -78,9 +79,16 @@ export default function Roadmap() {
                 <button
                   type="button"
                   onClick={() => navigate(`/learn/${slugify(step.topic)}`, { state: { rawQuery: step.topic } })}
-                  className="text-left font-medium text-slate-800 hover:text-slate-950 dark:text-slate-100 dark:hover:text-white"
+                  className="text-left"
                 >
-                  {i + 1}. {step.label}
+                  <p className="font-medium text-slate-800 hover:text-slate-950 dark:text-slate-100 dark:hover:text-white">
+                    {i + 1}. {step.label}
+                  </p>
+                  {(getTopicHook(step.topic) || step.summary) && (
+                    <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+                      {getTopicHook(step.topic) || step.summary}
+                    </p>
+                  )}
                 </button>
                 <button
                   type="button"

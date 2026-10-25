@@ -6,7 +6,7 @@ import {
 } from 'lucide-react'
 import GlassModal from './glass/GlassModal'
 import { TOPIC_CATALOG } from '../utils/constants'
-import { hasBuiltInGuide } from '../services/knowledgeBase'
+import { hasBuiltInGuide, searchAllDSA } from '../services/knowledgeBase'
 import { slugify } from '../utils/helpers'
 import { useAuth } from '../hooks/useAuth'
 
@@ -82,9 +82,17 @@ export default function CommandPalette({ open, onClose, theme, onToggleTheme }) 
   const filteredStatic = q
     ? staticCommands.filter((c) => c.label.toLowerCase().includes(q) || (c.badge && c.badge.toLowerCase().includes(q)))
     : staticCommands
-  const filteredTopics = q
-    ? topicItems.filter((t) => t.label.toLowerCase().includes(q) || t.badge.toLowerCase().includes(q)).slice(0, 12)
-    : topicItems.filter((t) => t.hasGuide).slice(0, 8)
+  const filteredTopics = useMemo(() => {
+    if (!q) return topicItems.filter((t) => t.hasGuide).slice(0, 8)
+    return searchAllDSA(q, 10).map((res) => ({
+      id: `search-${res.id}`,
+      label: res.title,
+      sublabel: res.hook,
+      badge: res.complexity ? `${res.complexity} · ${res.category}` : res.category,
+      icon: res.type === 'problem' ? MessageCircleQuestion : BookOpen,
+      action: () => navigate(`/learn/${slugify(res.query)}`, { state: { rawQuery: res.query } }),
+    }))
+  }, [q, topicItems, navigate])
 
   const askAction = query.trim()
     ? [{ id: 'ask', label: `Learn "${query.trim()}"`, badge: 'Custom Query', icon: Search, action: () => navigate(`/learn/${slugify(query.trim())}`, { state: { rawQuery: query.trim() } }) }]
@@ -149,12 +157,12 @@ export default function CommandPalette({ open, onClose, theme, onToggleTheme }) 
             <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-black/10 text-slate-500 dark:border-white/10 dark:text-slate-400">
               <item.icon size={14} />
             </span>
-            <span className="flex-1 truncate text-slate-800 dark:text-slate-100">{item.label}</span>
-            {item.hasGuide && (
-              <span className="rounded-full border border-signal/30 bg-signal/10 px-2 py-0.5 text-[10px] font-semibold text-signal">
-                Guide
-              </span>
-            )}
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-slate-800 dark:text-slate-100">{item.label}</p>
+              {item.sublabel && (
+                <p className="truncate text-xs text-slate-400">{item.sublabel}</p>
+              )}
+            </div>
             {item.badge && (
               <span className="shrink-0 text-xs text-slate-400">{item.badge}</span>
             )}

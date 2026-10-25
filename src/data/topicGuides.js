@@ -13,6 +13,8 @@
 //   questionCategory  which interview-question category to show (see interviewQuestions.js)
 //   related[]         next topics
 
+import { ENCYCLOPEDIA_GUIDES } from './dsaEncyclopedia'
+
 export const GUIDES = [
   // ------------------------------------------------------------------ two pointers
   {
@@ -1885,6 +1887,7 @@ def longest_consecutive(nums):
     questionCategory: 'hashing',
     related: ['Arrays', 'Strings', 'Prefix Sum', 'Sliding Window', 'Trie'],
   },
+  ...ENCYCLOPEDIA_GUIDES,
 ]
 
 export const GUIDE_COUNT = GUIDES.length

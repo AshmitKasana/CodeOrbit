@@ -14,6 +14,7 @@ vi.mock('../lib/supabase', () => ({ supabase: null, isSupabaseConfigured: false 
 
 import Home from './Home'
 import Topics from './Topics'
+import Practice from './Practice'
 import Interview from './Interview'
 import Dashboard from './Dashboard'
 import Settings from './Settings'
@@ -56,12 +57,21 @@ describe('navigation', () => {
 })
 
 describe('Topics', () => {
-  it('renders all categories and marks topics with built-in guides', () => {
+  it('renders all categories and topics', () => {
     const html = render(<Topics />)
     expect(html).toContain('Topic Explorer')
-    expect(html).toContain('Built-in guides')
+    expect(html).toContain('Data Structures')
     expect(html).toContain('Two Pointers')
-    expect(html).toContain('Guide')
+  })
+})
+
+describe('Practice', () => {
+  it('renders category tabs, 60+ topic pills, and real Easy/Medium/Hard practice problems', () => {
+    const html = render(<Practice />)
+    expect(html).toContain('Practice Problems Across 60+ DSA Topics')
+    expect(html).toContain('Arrays, Strings &amp; Linear')
+    expect(html).toContain('Two Sum (LC #1)')
+    expect(html).toContain('Trapping Rain Water (LC #42)')
   })
 })
 

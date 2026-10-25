@@ -16,9 +16,22 @@ describe('built-in pattern guides', () => {
       expect(lesson.examples.length).toBeGreaterThanOrEqual(2)
       expect(lesson.interviewQuestions.length).toBeGreaterThan(0)
       expect(lesson.commonMistakes.length).toBeGreaterThan(0)
+      expect(lesson.practiceProblems.easy.length).toBeGreaterThan(0)
+      expect(lesson.practiceProblems.medium.length).toBeGreaterThan(0)
+      expect(lesson.practiceProblems.hard.length).toBeGreaterThan(0)
       expect(lesson.languageNote('Rust')).toContain('Rust')
       expect(lesson.languageNote('Python')).toBeNull()
     }
+  })
+
+  it('provides real Easy, Medium, and Hard practice problems for Arrays, Linked List, and Pointers', () => {
+    const arrLesson = findEntry('Arrays').build()
+    expect(arrLesson.practiceProblems.easy.some((p) => p.title.includes('Two Sum'))).toBe(true)
+    expect(arrLesson.practiceProblems.hard.some((p) => p.title.includes('Trapping Rain Water'))).toBe(true)
+
+    const llLesson = findEntry('Linked List').build()
+    expect(llLesson.practiceProblems.easy.some((p) => p.title.includes('Reverse Linked List'))).toBe(true)
+    expect(llLesson.practiceProblems.hard.length).toBeGreaterThan(0)
   })
 
   it('resolves pattern queries without colliding with unrelated topics', () => {

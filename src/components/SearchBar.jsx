@@ -1,15 +1,11 @@
 import { forwardRef, useEffect, useMemo, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { ArrowRight, BookOpen, Check, ChevronDown, Code2, Search, X } from 'lucide-react'
-import { EXAMPLE_QUERIES, TOPIC_CATALOG } from '../utils/constants'
-import { hasBuiltInGuide } from '../services/knowledgeBase'
+import { EXAMPLE_QUERIES } from '../utils/constants'
+import { searchAllDSA } from '../services/knowledgeBase'
 import Magnetic from './Magnetic'
 
 const QUICK_LANGUAGES = ['All', 'Python', 'Java', 'C++', 'JavaScript', 'Go', 'Rust']
-
-const ALL_TOPICS = Object.entries(TOPIC_CATALOG).flatMap(([category, topics]) =>
-  topics.map((topic) => ({ topic, category, hasGuide: hasBuiltInGuide(topic) }))
-)
 
 const SearchBar = forwardRef(function SearchBar({ onSubmit, size = 'lg', autoFocus = false }, ref) {
   const [value, setValue] = useState('')
@@ -43,11 +39,7 @@ const SearchBar = forwardRef(function SearchBar({ onSubmit, size = 'lg', autoFoc
   }, [langMenuOpen])
 
   const suggestions = useMemo(() => {
-    const q = value.trim().toLowerCase()
-    if (!q) return []
-    return ALL_TOPICS.filter(
-      (item) => item.topic.toLowerCase().includes(q) || item.category.toLowerCase().includes(q)
-    ).slice(0, 6)
+    return searchAllDSA(value, 7)
   }, [value])
 
   function buildQuery(raw) {
@@ -189,29 +181,36 @@ const SearchBar = forwardRef(function SearchBar({ onSubmit, size = 'lg', autoFoc
         <div className="glass-surface absolute left-0 right-0 top-full z-30 mt-2 overflow-hidden rounded-2xl bg-white/95 p-1.5 text-left shadow-lg dark:bg-[#141416]/95">
           {suggestions.map((item) => (
             <button
-              key={item.topic}
+              key={item.id}
               type="button"
               onMouseDown={(e) => {
                 e.preventDefault()
-                submit(item.topic)
+                submit(item.query)
               }}
-              className="flex w-full items-center justify-between gap-2 rounded-xl px-3 py-2 text-sm text-slate-800 transition hover:bg-slate-100 dark:text-slate-100 dark:hover:bg-white/10"
+              className="flex w-full flex-col gap-0.5 rounded-xl px-3 py-2 text-left transition hover:bg-slate-100 dark:hover:bg-white/10"
             >
-              <span className="flex items-center gap-2 font-medium">
-                <BookOpen size={14} className="text-slate-400" />
-                {item.topic}
-                {selectedLang !== 'All' && (
-                  <span className="text-xs font-normal text-slate-400">in {selectedLang}</span>
-                )}
-              </span>
-              <span className="flex items-center gap-1.5">
-                {item.hasGuide && (
-                  <span className="rounded-full border border-signal/30 bg-signal/10 px-2 py-0.5 text-[10px] font-semibold text-signal">
-                    Guide
-                  </span>
-                )}
-                <span className="text-xs text-slate-400">{item.category}</span>
-              </span>
+              <div className="flex w-full items-center justify-between gap-2 text-sm text-slate-800 dark:text-slate-100">
+                <span className="flex items-center gap-2 font-medium">
+                  <BookOpen size={14} className="shrink-0 text-slate-400" />
+                  <span>{item.title}</span>
+                  {selectedLang !== 'All' && (
+                    <span className="text-xs font-normal text-slate-400">in {selectedLang}</span>
+                  )}
+                </span>
+                <span className="flex shrink-0 items-center gap-1.5">
+                  {item.complexity && (
+                    <span className="hidden rounded bg-slate-100 px-1.5 py-0.5 font-mono text-[10px] text-slate-600 sm:inline dark:bg-white/[0.06] dark:text-slate-300">
+                      {item.complexity}
+                    </span>
+                  )}
+                  <span className="text-xs text-slate-400">{item.category}</span>
+                </span>
+              </div>
+              {item.hook && (
+                <p className="line-clamp-1 pl-6 text-xs text-slate-500 dark:text-slate-400">
+                  {item.hook}
+                </p>
+              )}
             </button>
           ))}
         </div>
