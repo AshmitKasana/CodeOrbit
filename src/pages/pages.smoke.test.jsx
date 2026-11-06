@@ -18,6 +18,8 @@ import Practice from './Practice'
 import Interview from './Interview'
 import Dashboard from './Dashboard'
 import Settings from './Settings'
+import Profile from './Profile'
+import About from './About'
 import Header from '../components/Header'
 import Footer from '../components/Footer'
 import LimitReached from '../components/LimitReached'
@@ -116,6 +118,24 @@ describe('Settings', () => {
     expect(html).toContain('AI lessons')
     expect(html).toContain('a@b.c')
     expect(html).not.toMatch(/billing|upgrade|\bpro\b/i)
+  })
+})
+
+describe('About', () => {
+  it('renders platform overview and stats without AI-powered branding', () => {
+    const html = render(<About />)
+    expect(html).toContain('About Code Orbit')
+    expect(html).toContain('65+')
+    expect(html).not.toMatch(/AI-powered/i)
+  })
+})
+
+describe('Profile', () => {
+  it('renders user profile and inline edit trigger', () => {
+    auth.user = { id: 'u1', email: 'ashmit@example.com', user_metadata: { name: 'Ashmit Kasana' } }
+    const html = render(<Profile />)
+    expect(html).toContain('Ashmit Kasana')
+    expect(html).toContain('Edit Profile')
   })
 })
 

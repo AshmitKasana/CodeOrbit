@@ -100,7 +100,17 @@ function saveLocalUser(email, userRecord) {
   }
 }
 
-function buildLocalSession({ id, email, name, avatar_url = null, username = null, provider = 'email', created_at }) {
+function buildLocalSession({
+  id,
+  email,
+  name,
+  avatar_url = null,
+  username = null,
+  bio = '',
+  preferredLanguage = 'Python',
+  provider = 'email',
+  created_at,
+}) {
   const displayName = name || username || email?.split('@')[0] || 'Learner'
   const user = {
     id: id || `local-${email?.toLowerCase() || Date.now()}`,
@@ -112,6 +122,8 @@ function buildLocalSession({ id, email, name, avatar_url = null, username = null
       full_name: displayName,
       user_name: username || undefined,
       avatar_url: avatar_url || null,
+      bio: bio || '',
+      preferredLanguage: preferredLanguage || 'Python',
       provider,
     },
   }
@@ -450,13 +462,7 @@ async function signInWithProvider(provider) {
       window.location.assign(url)
       return { data: { url }, error: null }
     }
-    return {
-      data: null,
-      error: {
-        message:
-          "GitHub sign-in isn't set up yet. Enable the GitHub provider in Supabase (or set VITE_GITHUB_CLIENT_ID) to redirect to GitHub.",
-      },
-    }
+    return openOAuthPopup('github')
   }
 
   if (provider === 'google') {
@@ -593,6 +599,65 @@ export async function updatePassword(password) {
     }
   }
   return { data: { user: local?.user ?? null }, error: null }
+}
+
+export async function updateUserProfile(updates = {}) {
+  const local = getLocalSession()
+  if (local?.user) {
+    const emailKey = (local.user.email || '').toLowerCase()
+    const users = getLocalUsers()
+    const existingRecord = users[emailKey] || {}
+    const nextMeta = {
+      ...local.user.user_metadata,
+      ...(updates.name !== undefined ? { name: updates.name.trim(), full_name: updates.name.trim() } : {}),
+      ...(updates.username !== undefined ? { user_name: updates.username.trim() } : {}),
+      ...(updates.avatar_url !== undefined ? { avatar_url: updates.avatar_url?.trim() || null } : {}),
+      ...(updates.bio !== undefined ? { bio: updates.bio } : {}),
+      ...(updates.preferredLanguage !== undefined ? { preferredLanguage: updates.preferredLanguage } : {}),
+    }
+    const nextUser = {
+      ...local.user,
+      user_metadata: nextMeta,
+    }
+    const nextSession = { ...local, user: nextUser }
+    if (emailKey) {
+      saveLocalUser(emailKey, {
+        ...existingRecord,
+        id: nextUser.id,
+        email: local.user.email,
+        name: nextMeta.name,
+        username: nextMeta.user_name,
+        avatar_url: nextMeta.avatar_url,
+        bio: nextMeta.bio,
+        preferredLanguage: nextMeta.preferredLanguage,
+      })
+    }
+    saveLocalSession(nextSession)
+    return { data: { user: nextUser, session: nextSession }, error: null }
+  }
+
+  if (isSupabaseConfigured && supabase) {
+    try {
+      const { data, error } = await supabase.auth.updateUser({
+        data: {
+          ...(updates.name !== undefined ? { name: updates.name.trim(), full_name: updates.name.trim() } : {}),
+          ...(updates.username !== undefined ? { user_name: updates.username.trim() } : {}),
+          ...(updates.avatar_url !== undefined ? { avatar_url: updates.avatar_url?.trim() || null } : {}),
+          ...(updates.bio !== undefined ? { bio: updates.bio } : {}),
+          ...(updates.preferredLanguage !== undefined ? { preferredLanguage: updates.preferredLanguage } : {}),
+        },
+      })
+      if (!error && data?.user) {
+        await syncProfile(data.user)
+        return { data, error: null }
+      }
+      if (error) return { data: null, error }
+    } catch (err) {
+      return { data: null, error: { message: err?.message || 'Could not update profile.' } }
+    }
+  }
+
+  return { data: null, error: { message: 'No active user session found.' } }
 }
 
 export async function getSession() {

@@ -11,9 +11,6 @@ export default function TopicHeader({ result, level, onLevelChange, bookmarked, 
             <Code2 size={12} /> {result.language}
           </span>
         )}
-        <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-500 dark:bg-white/5 dark:text-slate-400">
-          {level}
-        </span>
         {result.source === 'ai' ? (
           <span className="flex items-center gap-1 rounded-full border border-signal/30 bg-signal/10 px-3 py-1 text-xs font-medium text-signal">
             <Sparkles size={12} /> AI-generated

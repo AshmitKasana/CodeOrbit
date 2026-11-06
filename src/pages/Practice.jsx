@@ -126,12 +126,13 @@ export default function Practice() {
   }, [problemsByDiff.all, solvedIds])
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-12 sm:px-6">
+    <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
       <div className="mb-8 text-center">
-        <h1 className="font-display text-3xl font-bold text-slate-900 dark:text-white sm:text-4xl">
+        <p className="text-xs font-semibold uppercase tracking-wider text-signal">Hands-On Coding Practice</p>
+        <h1 className="mt-1.5 font-display text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl dark:text-white">
           Practice Problems Across 60+ DSA Topics
         </h1>
-        <p className="mx-auto mt-3 max-w-2xl text-slate-500 dark:text-slate-400">
+        <p className="mx-auto mt-3 max-w-2xl text-sm leading-relaxed text-slate-500 sm:text-base dark:text-slate-400">
           Pick any category and topic below — or search any data structure, algorithm, or pattern — for curated Easy, Medium, and Hard problems with hints, runnable Python solutions, LeetCode links, and Big-O analysis.
         </p>
         <QuotaBadge className="mt-3" />
@@ -241,24 +242,6 @@ export default function Practice() {
                 Read concept lesson <ArrowUpRight size={14} />
               </button>
             </div>
-
-            {result.relatedTopics?.length > 0 && (
-              <div className="mt-4 flex flex-wrap items-center gap-1.5 border-t border-slate-200/70 pt-3 dark:border-surface-border">
-                <span className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
-                  Related Practice:
-                </span>
-                {result.relatedTopics.slice(0, 6).map((rel) => (
-                  <button
-                    key={rel}
-                    type="button"
-                    onClick={() => loadTopic(rel)}
-                    className="rounded-md bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600 transition hover:bg-slate-200 hover:text-slate-900 dark:bg-white/[0.05] dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white"
-                  >
-                    {rel} →
-                  </button>
-                ))}
-              </div>
-            )}
           </div>
 
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-3 dark:border-surface-border">

@@ -47,15 +47,15 @@ export default function Dashboard() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
-      <Reveal className="mb-10">
-        <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Dashboard</p>
-        <h1 className="mt-1 font-display text-3xl font-bold text-slate-900 dark:text-white sm:text-4xl">
+      <Reveal className="mb-10 text-center">
+        <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">Dashboard</p>
+        <h1 className="mt-2 font-display text-3xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-4xl">
           Welcome back, {displayName}.
         </h1>
       </Reveal>
 
-      <Reveal stagger={0.06} className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <motion.div variants={revealItem} className="card p-5 md:col-span-2 lg:col-span-3">
+      <Reveal stagger={0.06} className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <motion.div variants={revealItem} className="card p-6 md:col-span-2 lg:col-span-3">
           <div className="mb-4 flex items-center gap-2 text-sm font-semibold text-slate-500 dark:text-slate-400">
             <Flame size={15} /> Your Orbit
           </div>
@@ -113,75 +113,83 @@ export default function Dashboard() {
           </div>
         </motion.div>
 
-        <motion.div variants={revealItem} className="card p-5">
-          <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-500 dark:text-slate-400">
-            <Compass size={15} /> Continue &amp; Roadmap
+        <motion.div variants={revealItem} className="card flex h-full flex-col justify-between p-6">
+          <div>
+            <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-500 dark:text-slate-400">
+              <Compass size={15} /> Continue &amp; Roadmap
+            </div>
+            {continueLearning ? (
+              <button
+                onClick={() => open(continueLearning.query, continueLearning.slug)}
+                className="group mb-4 flex w-full items-center justify-between gap-3 rounded-xl border border-slate-200 px-3.5 py-2.5 text-left dark:border-surface-border"
+              >
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-medium text-slate-900 dark:text-white">{continueLearning.title || continueLearning.query}</p>
+                  {continueLearning.language && <p className="text-xs text-slate-400">{continueLearning.language}</p>}
+                </div>
+                <ArrowRight size={15} className="shrink-0 text-slate-400 transition group-hover:translate-x-0.5 group-hover:text-slate-900 dark:group-hover:text-white" />
+              </button>
+            ) : (
+              <p className="mb-4 text-sm text-slate-400">
+                No recent topic yet. <Link to="/topics" className="underline">Browse Topics</Link>.
+              </p>
+            )}
           </div>
-          {continueLearning ? (
-            <button
-              onClick={() => open(continueLearning.query, continueLearning.slug)}
-              className="group mb-4 flex w-full items-center justify-between gap-3 rounded-xl border border-slate-200 px-3.5 py-2.5 text-left dark:border-surface-border"
-            >
-              <div className="min-w-0">
-                <p className="truncate text-sm font-medium text-slate-900 dark:text-white">{continueLearning.title || continueLearning.query}</p>
-                {continueLearning.language && <p className="text-xs text-slate-400">{continueLearning.language}</p>}
-              </div>
-              <ArrowRight size={15} className="shrink-0 text-slate-400 transition group-hover:translate-x-0.5 group-hover:text-slate-900 dark:group-hover:text-white" />
-            </button>
-          ) : (
-            <p className="mb-4 text-sm text-slate-400">
-              No recent topic yet. <Link to="/topics" className="underline">Browse Topics</Link>.
-            </p>
-          )}
-          <div className="h-1.5 overflow-hidden rounded-full bg-slate-100 dark:bg-white/5">
-            <div className="h-full bg-accent transition-all" style={{ width: `${progressPct}%` }} />
-          </div>
-          <div className="mt-2 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
-            <span>{completed.length} / {ROADMAP.length} roadmap steps ({progressPct}%)</span>
-            <Link to="/roadmap" className="font-medium text-slate-900 hover:underline dark:text-white">
-              Roadmap →
-            </Link>
+          <div>
+            <div className="h-1.5 overflow-hidden rounded-full bg-slate-100 dark:bg-white/5">
+              <div className="h-full bg-accent transition-all" style={{ width: `${progressPct}%` }} />
+            </div>
+            <div className="mt-2 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+              <span>{completed.length} / {ROADMAP.length} roadmap steps ({progressPct}%)</span>
+              <Link to="/roadmap" className="font-medium text-slate-900 hover:underline dark:text-white">
+                Roadmap →
+              </Link>
+            </div>
           </div>
         </motion.div>
 
-        <motion.div variants={revealItem} className="card p-5">
-          <div className="mb-3 flex items-center justify-between">
-            <span className="flex items-center gap-2 text-sm font-semibold text-slate-500 dark:text-slate-400">
-              <Bookmark size={15} /> Bookmarks ({bookmarks.length})
-            </span>
-            <Link to="/bookmarks" className="text-xs font-medium text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white">
-              View All
-            </Link>
+        <motion.div variants={revealItem} className="card flex h-full flex-col justify-between p-6">
+          <div>
+            <div className="mb-3 flex items-center justify-between">
+              <span className="flex items-center gap-2 text-sm font-semibold text-slate-500 dark:text-slate-400">
+                <Bookmark size={15} /> Bookmarks ({bookmarks.length})
+              </span>
+              <Link to="/bookmarks" className="text-xs font-medium text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white">
+                View All
+              </Link>
+            </div>
+            {bookmarks.length === 0 && history.length === 0 ? (
+              <p className="text-sm text-slate-400">
+                Save topics as you study to revisit them anytime.
+              </p>
+            ) : (
+              <div className="flex flex-wrap gap-1.5">
+                {(bookmarks.length > 0 ? bookmarks : history).slice(0, 6).map((item) => (
+                  <button
+                    key={item.slug + (item.timestamp || '')}
+                    onClick={() => open(item.title || item.query, item.slug)}
+                    className="chip text-xs"
+                  >
+                    {item.title || item.query}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
-          {bookmarks.length === 0 && history.length === 0 ? (
-            <p className="text-sm text-slate-400">
-              Save topics as you study to revisit them anytime.
-            </p>
-          ) : (
+        </motion.div>
+
+        <motion.div variants={revealItem} className="card flex h-full flex-col justify-between p-6">
+          <div>
+            <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-500 dark:text-slate-400">
+              <BookOpen size={15} /> Recommended Next
+            </div>
             <div className="flex flex-wrap gap-1.5">
-              {(bookmarks.length > 0 ? bookmarks : history).slice(0, 6).map((item) => (
-                <button
-                  key={item.slug + (item.timestamp || '')}
-                  onClick={() => open(item.title || item.query, item.slug)}
-                  className="chip text-xs"
-                >
-                  {item.title || item.query}
+              {recommended.map((t) => (
+                <button key={t} onClick={() => open(t)} className="chip text-xs">
+                  {t}
                 </button>
               ))}
             </div>
-          )}
-        </motion.div>
-
-        <motion.div variants={revealItem} className="card p-5">
-          <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-500 dark:text-slate-400">
-            <BookOpen size={15} /> Recommended Next
-          </div>
-          <div className="flex flex-wrap gap-1.5">
-            {recommended.map((t) => (
-              <button key={t} onClick={() => open(t)} className="chip text-xs">
-                {t}
-              </button>
-            ))}
           </div>
         </motion.div>
       </Reveal>

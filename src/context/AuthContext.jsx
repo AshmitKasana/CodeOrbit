@@ -64,6 +64,7 @@ export function AuthProvider({ children }) {
     signOut: authService.signOut,
     resetPasswordForEmail: authService.resetPasswordForEmail,
     updatePassword: authService.updatePassword,
+    updateUserProfile: authService.updateUserProfile,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

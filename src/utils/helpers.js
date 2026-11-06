@@ -138,6 +138,11 @@ export function toggleBookmark(entry, userId) {
   return next
 }
 
+export function clearBookmarks(userId) {
+  writeList(scopedKey(BOOKMARKS_KEY, userId), [])
+  return []
+}
+
 export function getRoadmapProgress(userId) {
   try {
     const raw = localStorage.getItem(scopedKey(PROGRESS_KEY, userId))
@@ -156,6 +161,34 @@ export function setRoadmapStatus(id, status, userId) {
     /* ignore */
   }
   return progress
+}
+
+export function resetRoadmapProgress(userId) {
+  try {
+    localStorage.removeItem(scopedKey(PROGRESS_KEY, userId))
+  } catch {
+    /* ignore */
+  }
+  return {}
+}
+
+const PREF_LANG_KEY = 'dsa-ai:preferred-language'
+
+export function getPreferredLanguage(userId) {
+  try {
+    return localStorage.getItem(scopedKey(PREF_LANG_KEY, userId)) || 'Python'
+  } catch {
+    return 'Python'
+  }
+}
+
+export function setPreferredLanguage(lang, userId) {
+  try {
+    localStorage.setItem(scopedKey(PREF_LANG_KEY, userId), lang)
+  } catch {
+    /* ignore */
+  }
+  return lang
 }
 
 export function getStoredTheme() {

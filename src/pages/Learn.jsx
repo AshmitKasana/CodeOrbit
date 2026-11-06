@@ -27,8 +27,29 @@ import LimitReached from '../components/LimitReached'
 import { useTopic } from '../hooks/useTopic'
 import { useAuth } from '../hooks/useAuth'
 import { refreshQuota } from '../services/aiService'
-import { unslugify, isBookmarked, toggleBookmark } from '../utils/helpers'
+import { getPreferredLanguage, isBookmarked, scopedKey, slugify, toggleBookmark, unslugify } from '../utils/helpers'
+import { recordActivity } from '../lib/progress'
 import { getLessonExtras } from '../utils/lessonExtras'
+
+const SOLVED_KEY = 'dsa-ai:solved-practice'
+
+function loadSolved(userId) {
+  try {
+    const raw = localStorage.getItem(scopedKey(SOLVED_KEY, userId))
+    const parsed = raw ? JSON.parse(raw) : []
+    return Array.isArray(parsed) ? parsed : []
+  } catch {
+    return []
+  }
+}
+
+function saveSolved(ids, userId) {
+  try {
+    localStorage.setItem(scopedKey(SOLVED_KEY, userId), JSON.stringify(ids))
+  } catch {
+    /* ignore storage errors */
+  }
+}
 
 export default function Learn() {
   const { topic: slug } = useParams()
@@ -41,11 +62,16 @@ export default function Learn() {
   const [bookmarked, setBookmarked] = useState(false)
   const [exampleLang, setExampleLang] = useState(null)
   const [showPlayground, setShowPlayground] = useState(false)
+  const [solvedIds, setSolvedIds] = useState(() => loadSolved(user?.id))
 
   useEffect(() => {
     window.scrollTo({ top: 0 })
     setShowPlayground(false)
   }, [slug])
+
+  useEffect(() => {
+    setSolvedIds(loadSolved(user?.id))
+  }, [user?.id])
 
   // Show the "AI lessons left today" badge as soon as the page opens (no quota is consumed).
   useEffect(() => {
@@ -55,9 +81,11 @@ export default function Learn() {
   useEffect(() => {
     if (result) {
       setBookmarked(isBookmarked(result.slug, user?.id))
-      setExampleLang(result.examples?.[0]?.language || null)
+      const pref = user?.user_metadata?.preferredLanguage || getPreferredLanguage(user?.id)
+      const langs = (result.examples || []).map((e) => e.language)
+      setExampleLang(langs.includes(pref) ? pref : result.examples?.[0]?.language || null)
     }
-  }, [result, user?.id])
+  }, [result, user?.id, user?.user_metadata?.preferredLanguage])
 
   const extras = useMemo(() => getLessonExtras(result), [result])
   const exampleLanguages = useMemo(() => [...new Set((result?.examples || []).map((e) => e.language))], [result])
@@ -67,6 +95,14 @@ export default function Learn() {
     if (!result) return
     toggleBookmark({ slug: result.slug, title: result.title, language: result.language }, user?.id)
     setBookmarked((b) => !b)
+  }
+
+  function handleToggleSolved(problemKey) {
+    const exists = solvedIds.includes(problemKey)
+    const next = exists ? solvedIds.filter((id) => id !== problemKey) : [...solvedIds, problemKey]
+    setSolvedIds(next)
+    saveSolved(next, user?.id)
+    if (!exists) recordActivity(user?.id, 'question')
   }
 
   if (status === 'loading' || status === 'idle') return <LoadingState stageIndex={stageIndex} />
@@ -114,9 +150,18 @@ export default function Learn() {
               <div key={diff}>
                 <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{diff}</h3>
                 <div className="space-y-3">
-                  {result.practiceProblems[diff].map((p, i) => (
-                    <PracticeCard key={i} problem={p} difficulty={diff.charAt(0).toUpperCase() + diff.slice(1)} />
-                  ))}
+                  {result.practiceProblems[diff].map((p, i) => {
+                    const pKey = p.id || `${slugify(result.title || slug)}-${diff}-${i}`
+                    return (
+                      <PracticeCard
+                        key={pKey}
+                        problem={p}
+                        difficulty={diff.charAt(0).toUpperCase() + diff.slice(1)}
+                        solved={solvedIds.includes(pKey)}
+                        onToggleSolved={() => handleToggleSolved(pKey)}
+                      />
+                    )
+                  })}
                 </div>
               </div>
             ) : null

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   ArrowRight, Bookmark, BookOpen, Brain, Github, Home as HomeIcon, Info, LayoutDashboard, LogIn, LogOut,
-  MessageCircleQuestion, Moon, Route, Search, Sun, Target, UserPlus,
+  MessageCircleQuestion, Moon, Route, Search, Settings, Sun, Target, User, UserPlus,
 } from 'lucide-react'
 import GlassModal from './glass/GlassModal'
 import { TOPIC_CATALOG } from '../utils/constants'
@@ -31,6 +31,7 @@ export default function CommandPalette({ open, onClose, theme, onToggleTheme }) 
   const [query, setQuery] = useState('')
   const [activeIndex, setActiveIndex] = useState(0)
   const inputRef = useRef(null)
+  const itemRefs = useRef([])
 
   const staticCommands = useMemo(
     () => [
@@ -42,7 +43,9 @@ export default function CommandPalette({ open, onClose, theme, onToggleTheme }) 
       ...(user
         ? [
             { id: 'dashboard', label: 'Go to Dashboard', badge: 'Account', icon: LayoutDashboard, action: () => navigate('/dashboard') },
+            { id: 'profile', label: 'Your Profile', badge: 'Account', icon: User, action: () => navigate('/profile') },
             { id: 'bookmarks', label: 'View Bookmarks', badge: 'Account', icon: Bookmark, action: () => navigate('/bookmarks') },
+            { id: 'settings', label: 'Account Settings & Preferences', badge: 'Account', icon: Settings, action: () => navigate('/settings') },
           ]
         : [
             { id: 'login', label: 'Log In', badge: 'Account', icon: LogIn, action: () => navigate('/login') },
@@ -110,6 +113,13 @@ export default function CommandPalette({ open, onClose, theme, onToggleTheme }) 
 
   useEffect(() => setActiveIndex(0), [query])
 
+  useEffect(() => {
+    const el = itemRefs.current[activeIndex]
+    if (el && typeof el.scrollIntoView === 'function') {
+      el.scrollIntoView({ block: 'nearest' })
+    }
+  }, [activeIndex])
+
   function run(item) {
     item.action()
     onClose()
@@ -148,6 +158,9 @@ export default function CommandPalette({ open, onClose, theme, onToggleTheme }) 
         {items.map((item, i) => (
           <button
             key={item.id}
+            ref={(el) => {
+              itemRefs.current[i] = el
+            }}
             onMouseEnter={() => setActiveIndex(i)}
             onClick={() => run(item)}
             className={`flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm transition ${

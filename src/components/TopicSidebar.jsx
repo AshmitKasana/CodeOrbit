@@ -1,11 +1,15 @@
 import { useEffect, useState } from 'react'
+import { useLocation } from 'react-router-dom'
+import { motion } from 'framer-motion'
 import { SIDEBAR_SECTIONS } from '../utils/constants'
 import GlassDropdown from './glass/GlassDropdown'
 
 export default function TopicSidebar() {
   const [active, setActive] = useState(SIDEBAR_SECTIONS[0].id)
+  const location = useLocation()
 
   useEffect(() => {
+    setActive(SIDEBAR_SECTIONS[0].id)
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -19,7 +23,7 @@ export default function TopicSidebar() {
       if (el) observer.observe(el)
     })
     return () => observer.disconnect()
-  }, [])
+  }, [location.pathname])
 
   function jumpTo(e, id) {
     e.preventDefault()
@@ -36,7 +40,11 @@ export default function TopicSidebar() {
         {SIDEBAR_SECTIONS.map((s) => (
           <li key={s.id} className="relative">
             {active === s.id && (
-              <span className="absolute -left-px top-1 bottom-1 w-0.5 rounded-full bg-signal" />
+              <motion.span
+                layoutId="topic-sidebar-indicator"
+                transition={{ type: 'spring', stiffness: 520, damping: 36 }}
+                className="absolute -left-px top-1 bottom-1 w-0.5 rounded-full bg-signal"
+              />
             )}
             <a
               href={`#${s.id}`}

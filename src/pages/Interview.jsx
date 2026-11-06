@@ -185,14 +185,14 @@ export default function Interview() {
   const pct = stats.total > 0 ? Math.round((stats.reviewed / stats.total) * 100) : 0
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-12 sm:px-6">
+    <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
       {/* Header */}
       <div className="mb-8 text-center">
         <p className="text-xs font-semibold uppercase tracking-wider text-signal">Interview Question Bank</p>
-        <h1 className="mt-1 font-display text-3xl font-bold text-slate-900 dark:text-white sm:text-4xl">
+        <h1 className="mt-1.5 font-display text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl dark:text-white">
           Real Technical Interview Prep
         </h1>
-        <p className="mx-auto mt-2.5 max-w-2xl text-sm text-slate-500 dark:text-slate-400">
+        <p className="mx-auto mt-3 max-w-2xl text-sm leading-relaxed text-slate-500 sm:text-base dark:text-slate-400">
           Master the {stats.total} highest-frequency coding and conceptual questions asked at Google, Amazon, Meta, and Microsoft — complete with optimal code, exact Big-O, LeetCode links, and real interviewer follow-ups.
         </p>
       </div>
@@ -337,147 +337,21 @@ export default function Interview() {
             )}
           </AnimatePresence>
 
-          {/* 1. Job Role Selector + Custom Role Input */}
-          <div className="card mb-4 p-4">
-            <div className="mb-2.5 flex items-center justify-between">
-              <span className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                <Briefcase size={13} className="text-signal" /> 1. Target Job Role (Select or Type Any Role)
-              </span>
-              {(role !== 'all' || customRoleInput) && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setRole('all')
-                    setCustomRoleInput('')
-                  }}
-                  className="text-xs text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
-                >
-                  Reset role
-                </button>
-              )}
-            </div>
-
-            <div className="mb-3 flex items-center gap-2 rounded-xl border border-slate-200 bg-white/60 px-3.5 py-2 transition focus-within:border-slate-900/50 dark:border-surface-border dark:bg-surface/60 dark:focus-within:border-white/50">
-              <Briefcase size={14} className="shrink-0 text-slate-400" />
-              <input
-                value={customRoleInput}
-                onChange={(e) => {
-                  setCustomRoleInput(e.target.value)
-                  if (e.target.value.trim()) setRole('all')
-                }}
-                placeholder="Type any job role (e.g., Android Developer, Backend Engineer, Data Scientist, SRE, Quant, iOS, Cloud)..."
-                className="w-full bg-transparent text-xs text-slate-900 outline-none placeholder:text-slate-400 sm:text-sm dark:text-white dark:placeholder:text-slate-500"
-              />
-              {customRoleInput && (
-                <button
-                  type="button"
-                  onClick={() => setCustomRoleInput('')}
-                  aria-label="Clear custom role"
-                  className="shrink-0 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
-                >
-                  <X size={14} />
-                </button>
-              )}
-            </div>
-
-            <div className="flex flex-wrap gap-1.5">
-              <button
-                type="button"
-                onClick={() => {
-                  setRole('all')
-                  setCustomRoleInput('')
-                }}
-                className={`rounded-xl border px-3 py-1.5 text-xs font-medium transition ${
-                  role === 'all' && !customRoleInput
-                    ? 'border-slate-900 bg-accent text-accent-fg dark:border-white'
-                    : 'border-slate-200 text-slate-600 hover:border-slate-900/40 dark:border-surface-border dark:text-slate-300 dark:hover:border-white/40'
-                }`}
-              >
-                All Job Roles
-              </button>
-              {JOB_ROLES.map((r) => (
-                <button
-                  key={r.id}
-                  type="button"
-                  onClick={() => {
-                    setRole(r.id)
-                    setCustomRoleInput('')
-                  }}
-                  className={`rounded-xl border px-3 py-1.5 text-xs font-medium transition ${
-                    (role === r.id && !customRoleInput) || (customRoleInput && activeRoleObj?.id === r.id && !activeRoleObj?.customTitle)
-                      ? 'border-slate-900 bg-accent text-accent-fg dark:border-white'
-                      : 'border-slate-200 text-slate-600 hover:border-slate-900/40 dark:border-surface-border dark:text-slate-300 dark:hover:border-white/40'
-                  }`}
-                >
-                  {r.label}
-                </button>
-              ))}
-            </div>
-
-            {activeRoleObj && (
-              <div className="mt-3 space-y-2 rounded-xl border border-signal/25 bg-signal/[0.06] px-3.5 py-3 text-xs">
-                <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
-                  <p className="text-slate-700 dark:text-slate-200">
-                    <strong className="font-semibold text-slate-900 dark:text-white">
-                      {activeRoleObj.customTitle ? `${activeRoleObj.customTitle} (${activeRoleObj.shortLabel} Track)` : activeRoleObj.label}:
-                    </strong>{' '}
-                    {activeRoleObj.focus}
-                  </p>
-                  <span className="shrink-0 self-start rounded-full bg-signal/15 px-2.5 py-0.5 font-mono text-[11px] font-semibold text-signal sm:self-center">
-                    {activeRoleObj.targetMix}
-                  </span>
-                </div>
-                {activeRoleObj.mustKnow && (
-                  <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
-                    <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">Priority DSA for this role:</span>
-                    {activeRoleObj.mustKnow.map((topicTag) => (
-                      <span
-                        key={topicTag}
-                        className="rounded-md bg-white/80 px-2 py-0.5 text-[11px] font-medium text-slate-700 dark:bg-white/[0.07] dark:text-slate-200"
-                      >
-                        {topicTag}
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* 2. DSA Topic Selector + Custom Topic Input */}
-          <div className="card mb-4 p-4">
-            <div className="mb-2.5 flex items-center justify-between">
-              <span className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                <Layers size={13} className="text-signal" /> 2. DSA Topic or Pattern (Select or Type Any Topic)
-              </span>
-              {(category !== 'all' || customTopicInput) && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setCategory('all')
-                    setCustomTopicInput('')
-                  }}
-                  className="text-xs text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
-                >
-                  Reset topic
-                </button>
-              )}
-            </div>
-
-            <div className="mb-3 flex flex-col gap-2 sm:flex-row">
+          {/* Unified Search, Role, Company & Topic Filters */}
+          <div className="card mb-6 space-y-3.5 p-4">
+            <div className="flex flex-col gap-2.5 sm:flex-row">
               <div className="flex flex-1 items-center gap-2 rounded-xl border border-slate-200 bg-white/60 px-3.5 py-2 transition focus-within:border-slate-900/50 dark:border-surface-border dark:bg-surface/60 dark:focus-within:border-white/50">
-                <Layers size={14} className="shrink-0 text-slate-400" />
+                <Search size={15} className="shrink-0 text-slate-400" />
                 <input
-                  value={customTopicInput}
-                  onChange={(e) => setCustomTopicInput(e.target.value)}
-                  placeholder="Type any DSA topic or pattern (e.g., Sliding Window, Trie, Dijkstra, LRU Cache, Monotonic Stack, Bitmask)..."
-                  className="w-full bg-transparent text-xs text-slate-900 outline-none placeholder:text-slate-400 sm:text-sm dark:text-white dark:placeholder:text-slate-500"
+                  value={filterText}
+                  onChange={(e) => setFilterText(e.target.value)}
+                  placeholder="Search by problem, LeetCode #, pattern, role, or company..."
+                  className="w-full bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-400 dark:text-white dark:placeholder:text-slate-500"
                 />
-                {customTopicInput && (
+                {filterText && (
                   <button
-                    type="button"
-                    onClick={() => setCustomTopicInput('')}
-                    aria-label="Clear custom topic"
+                    onClick={() => setFilterText('')}
+                    aria-label="Clear search"
                     className="shrink-0 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
                   >
                     <X size={14} />
@@ -485,19 +359,89 @@ export default function Interview() {
                 )}
               </div>
 
-              {(customRoleInput.trim() || customTopicInput.trim()) && (
+              <div className="flex flex-wrap items-center gap-1.5">
+                {['all', ...DIFFICULTIES].map((d) => (
+                  <button
+                    key={d}
+                    type="button"
+                    onClick={() => setDifficulty(d)}
+                    className={`rounded-xl border px-3 py-2 text-xs font-medium transition ${
+                      difficulty === d
+                        ? 'border-slate-900 bg-accent text-accent-fg dark:border-white'
+                        : 'border-slate-200 text-slate-600 hover:border-slate-900/40 dark:border-surface-border dark:text-slate-300 dark:hover:border-white/40'
+                    }`}
+                  >
+                    {d === 'all' ? 'All levels' : d}
+                  </button>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => setUnreviewedOnly((u) => !u)}
+                  aria-pressed={unreviewedOnly}
+                  className={`rounded-xl border px-3 py-2 text-xs font-medium transition ${
+                    unreviewedOnly
+                      ? 'border-signal/40 bg-signal/10 text-signal'
+                      : 'border-slate-200 text-slate-600 hover:border-slate-900/40 dark:border-surface-border dark:text-slate-300 dark:hover:border-white/40'
+                  }`}
+                >
+                  Unreviewed only
+                </button>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2 border-t border-slate-200/70 pt-3 dark:border-surface-border">
+              <div className="flex items-center gap-1.5">
+                <Briefcase size={13} className="text-slate-400" />
+                <select
+                  value={role}
+                  onChange={(e) => {
+                    setRole(e.target.value)
+                    setCustomRoleInput('')
+                  }}
+                  aria-label="Target job role"
+                  className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 outline-none dark:border-surface-border dark:bg-[#141416] dark:text-slate-200"
+                >
+                  <option value="all">All Job Roles</option>
+                  {JOB_ROLES.map((r) => (
+                    <option key={r.id} value={r.id}>
+                      {r.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex items-center gap-1.5">
+                <Building2 size={13} className="text-slate-400" />
+                <select
+                  value={company}
+                  onChange={(e) => setCompany(e.target.value)}
+                  aria-label="Company filter"
+                  className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 outline-none dark:border-surface-border dark:bg-[#141416] dark:text-slate-200"
+                >
+                  {TOP_COMPANIES.map((c) => (
+                    <option key={c} value={c}>
+                      {c === 'all' ? 'All Companies' : c}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {(role !== 'all' || company !== 'all' || category !== 'all' || filterText || difficulty !== 'all' || unreviewedOnly) && (
                 <button
                   type="button"
                   onClick={() => {
-                    const topicPart = customTopicInput.trim() || (category !== 'all' ? getCategoryLabel(category) : 'Data Structures and Algorithms')
-                    const rolePart = customRoleInput.trim() || (activeRoleObj ? activeRoleObj.label : '')
-                    const combinedPrompt = rolePart ? `${topicPart} for ${rolePart}` : topicPart
-                    setShowCustomGenerator(true)
-                    loadTopic(combinedPrompt)
+                    setRole('all')
+                    setCustomRoleInput('')
+                    setCompany('all')
+                    setCategory('all')
+                    setCustomTopicInput('')
+                    setFilterText('')
+                    setDifficulty('all')
+                    setUnreviewedOnly(false)
                   }}
-                  className="btn-secondary shrink-0 text-xs"
+                  className="ml-auto text-xs text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
                 >
-                  <Sparkles size={13} /> Generate Custom AI Questions
+                  Clear filters
                 </button>
               )}
             </div>
@@ -515,7 +459,7 @@ export default function Interview() {
                     : 'border-slate-200 text-slate-600 hover:border-slate-900/40 dark:border-surface-border dark:text-slate-300 dark:hover:border-white/40'
                 }`}
               >
-                All DSA Topics
+                All Topics
               </button>
               {QUESTION_CATEGORIES.map((c) => (
                 <button
@@ -535,74 +479,6 @@ export default function Interview() {
                 </button>
               ))}
             </div>
-          </div>
-
-          {/* Search, Difficulty & Company Filters */}
-          <div className="mb-3 flex flex-col gap-2.5 sm:flex-row">
-            <div className="flex flex-1 items-center gap-2 rounded-xl border border-slate-200 bg-white/60 px-3.5 py-2 transition focus-within:border-slate-900/50 dark:border-surface-border dark:bg-surface/60 dark:focus-within:border-white/50">
-              <Search size={15} className="shrink-0 text-slate-400" />
-              <input
-                value={filterText}
-                onChange={(e) => setFilterText(e.target.value)}
-                placeholder="Search by problem, LeetCode #, pattern, role, or company..."
-                className="w-full bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-400 dark:text-white dark:placeholder:text-slate-500"
-              />
-              {filterText && (
-                <button onClick={() => setFilterText('')} aria-label="Clear search" className="shrink-0 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200">
-                  <X size={14} />
-                </button>
-              )}
-            </div>
-
-            <div className="flex flex-wrap items-center gap-1.5">
-              {['all', ...DIFFICULTIES].map((d) => (
-                <button
-                  key={d}
-                  type="button"
-                  onClick={() => setDifficulty(d)}
-                  className={`rounded-xl border px-3 py-2 text-xs font-medium transition ${
-                    difficulty === d
-                      ? 'border-slate-900 bg-accent text-accent-fg dark:border-white'
-                      : 'border-slate-200 text-slate-600 hover:border-slate-900/40 dark:border-surface-border dark:text-slate-300 dark:hover:border-white/40'
-                  }`}
-                >
-                  {d === 'all' ? 'All levels' : d}
-                </button>
-              ))}
-              <button
-                type="button"
-                onClick={() => setUnreviewedOnly((u) => !u)}
-                aria-pressed={unreviewedOnly}
-                className={`rounded-xl border px-3 py-2 text-xs font-medium transition ${
-                  unreviewedOnly
-                    ? 'border-signal/40 bg-signal/10 text-signal'
-                    : 'border-slate-200 text-slate-600 hover:border-slate-900/40 dark:border-surface-border dark:text-slate-300 dark:hover:border-white/40'
-                }`}
-              >
-                Unreviewed only
-              </button>
-            </div>
-          </div>
-
-          {/* Company Filter Row */}
-          <div className="mb-6 flex flex-wrap items-center gap-1.5">
-            <span className="mr-1 inline-flex items-center gap-1 text-xs font-medium text-slate-400">
-              <Building2 size={12} /> Company:
-            </span>
-            {TOP_COMPANIES.map((c) => (
-              <button
-                key={c}
-                type="button"
-                onClick={() => setCompany(c)}
-                className={`rounded-full px-2.5 py-1 text-xs font-medium transition ${
-                  company === c
-                    ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900'
-                    : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
-                }`}
-              >
-                {c === 'all' ? 'All' : c}
-              </button>
-            ))}
           </div>
 
           {/* Question Bank List Grouped by DSA Topic */}

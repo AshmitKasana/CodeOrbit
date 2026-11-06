@@ -12,6 +12,8 @@ export const LANGUAGES = [
   'Swift',
 ]
 
+export const SUPPORTED_LANGUAGES = LANGUAGES
+
 export const LANGUAGE_ALIASES = {
   java: 'Java',
   c: 'C',

@@ -7,12 +7,14 @@ import Magnetic from './Magnetic'
 
 const QUICK_LANGUAGES = ['All', 'Python', 'Java', 'C++', 'JavaScript', 'Go', 'Rust']
 
-const SearchBar = forwardRef(function SearchBar({ onSubmit, size = 'lg', autoFocus = false }, ref) {
+const SearchBar = forwardRef(function SearchBar({ onSubmit, size = 'lg', autoFocus = false, placeholder }, ref) {
   const [value, setValue] = useState('')
   const [selectedLang, setSelectedLang] = useState('All')
   const [langMenuOpen, setLangMenuOpen] = useState(false)
   const [focused, setFocused] = useState(false)
+  const [activeSuggestionIdx, setActiveSuggestionIdx] = useState(-1)
   const [placeholderIdx, setPlaceholderIdx] = useState(0)
+  const containerRef = useRef(null)
   const langMenuRef = useRef(null)
 
   useEffect(() => {
@@ -21,14 +23,19 @@ const SearchBar = forwardRef(function SearchBar({ onSubmit, size = 'lg', autoFoc
   }, [])
 
   useEffect(() => {
-    if (!langMenuOpen) return
     function onDocClick(e) {
-      if (langMenuRef.current && !langMenuRef.current.contains(e.target)) {
+      if (containerRef.current && !containerRef.current.contains(e.target)) {
+        setFocused(false)
+        setLangMenuOpen(false)
+      } else if (langMenuOpen && langMenuRef.current && !langMenuRef.current.contains(e.target)) {
         setLangMenuOpen(false)
       }
     }
     function onKeyDown(e) {
-      if (e.key === 'Escape') setLangMenuOpen(false)
+      if (e.key === 'Escape') {
+        setLangMenuOpen(false)
+        setFocused(false)
+      }
     }
     document.addEventListener('mousedown', onDocClick)
     window.addEventListener('keydown', onKeyDown)
@@ -40,6 +47,10 @@ const SearchBar = forwardRef(function SearchBar({ onSubmit, size = 'lg', autoFoc
 
   const suggestions = useMemo(() => {
     return searchAllDSA(value, 7)
+  }, [value])
+
+  useEffect(() => {
+    setActiveSuggestionIdx(-1)
   }, [value])
 
   function buildQuery(raw) {
@@ -64,10 +75,33 @@ const SearchBar = forwardRef(function SearchBar({ onSubmit, size = 'lg', autoFoc
     }
   }
 
+  function handleKeyDown(e) {
+    if (e.key === 'ArrowDown' && suggestions.length > 0) {
+      e.preventDefault()
+      setFocused(true)
+      setActiveSuggestionIdx((idx) => (idx + 1) % suggestions.length)
+      return
+    }
+    if (e.key === 'ArrowUp' && suggestions.length > 0) {
+      e.preventDefault()
+      setFocused(true)
+      setActiveSuggestionIdx((idx) => (idx <= 0 ? suggestions.length - 1 : idx - 1))
+      return
+    }
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      if (focused && activeSuggestionIdx >= 0 && suggestions[activeSuggestionIdx]) {
+        submit(suggestions[activeSuggestionIdx].query)
+      } else {
+        submit()
+      }
+    }
+  }
+
   const big = size === 'lg'
 
   return (
-    <div className="relative w-full">
+    <div ref={containerRef} className="relative w-full">
       <div
         className={`glass-surface flex items-center gap-3 rounded-2xl transition focus-within:border-black/25 focus-within:shadow-glow dark:focus-within:border-white/25 ${
           big ? 'px-5 py-4' : 'px-4 py-2.5'
@@ -82,10 +116,12 @@ const SearchBar = forwardRef(function SearchBar({ onSubmit, size = 'lg', autoFoc
             setFocused(true)
             setLangMenuOpen(false)
           }}
-          onBlur={() => setTimeout(() => setFocused(false), 150)}
-          onChange={(e) => setValue(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && submit()}
-          placeholder={`e.g. "${EXAMPLE_QUERIES[placeholderIdx]}"`}
+          onChange={(e) => {
+            setValue(e.target.value)
+            setFocused(true)
+          }}
+          onKeyDown={handleKeyDown}
+          placeholder={placeholder || `e.g. "${EXAMPLE_QUERIES[placeholderIdx]}"`}
           className={`w-full bg-transparent text-slate-900 outline-none placeholder:text-slate-400 dark:text-white dark:placeholder:text-slate-500 ${
             big ? 'text-lg' : 'text-sm'
           }`}
@@ -176,45 +212,59 @@ const SearchBar = forwardRef(function SearchBar({ onSubmit, size = 'lg', autoFoc
         </Magnetic>
       </div>
 
-      {/* Instant autocomplete dropdown */}
-      {focused && suggestions.length > 0 && (
-        <div className="glass-surface absolute left-0 right-0 top-full z-30 mt-2 overflow-hidden rounded-2xl bg-white/95 p-1.5 text-left shadow-lg dark:bg-[#141416]/95">
-          {suggestions.map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              onMouseDown={(e) => {
-                e.preventDefault()
-                submit(item.query)
-              }}
-              className="flex w-full flex-col gap-0.5 rounded-xl px-3 py-2 text-left transition hover:bg-slate-100 dark:hover:bg-white/10"
-            >
-              <div className="flex w-full items-center justify-between gap-2 text-sm text-slate-800 dark:text-slate-100">
-                <span className="flex items-center gap-2 font-medium">
-                  <BookOpen size={14} className="shrink-0 text-slate-400" />
-                  <span>{item.title}</span>
-                  {selectedLang !== 'All' && (
-                    <span className="text-xs font-normal text-slate-400">in {selectedLang}</span>
-                  )}
-                </span>
-                <span className="flex shrink-0 items-center gap-1.5">
-                  {item.complexity && (
-                    <span className="hidden rounded bg-slate-100 px-1.5 py-0.5 font-mono text-[10px] text-slate-600 sm:inline dark:bg-white/[0.06] dark:text-slate-300">
-                      {item.complexity}
+      {/* Instant autocomplete dropdown with keyboard arrow navigation */}
+      <AnimatePresence>
+        {focused && suggestions.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: -6, scale: 0.99 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -4, scale: 0.99 }}
+            transition={{ duration: 0.16, ease: [0.22, 1, 0.36, 1] }}
+            className="glass-surface absolute left-0 right-0 top-full z-30 mt-2 overflow-hidden rounded-2xl bg-white/95 p-1.5 text-left shadow-lg dark:bg-[#141416]/95"
+          >
+            {suggestions.map((item, idx) => {
+              const active = idx === activeSuggestionIdx
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  onMouseEnter={() => setActiveSuggestionIdx(idx)}
+                  onMouseDown={(e) => {
+                    e.preventDefault()
+                    submit(item.query)
+                  }}
+                  className={`flex w-full flex-col gap-0.5 rounded-xl px-3 py-2 text-left transition ${
+                    active ? 'bg-slate-100 dark:bg-white/10' : 'hover:bg-slate-100 dark:hover:bg-white/10'
+                  }`}
+                >
+                  <div className="flex w-full items-center justify-between gap-2 text-sm text-slate-800 dark:text-slate-100">
+                    <span className="flex items-center gap-2 font-medium">
+                      <BookOpen size={14} className={`shrink-0 ${active ? 'text-signal' : 'text-slate-400'}`} />
+                      <span>{item.title}</span>
+                      {selectedLang !== 'All' && (
+                        <span className="text-xs font-normal text-slate-400">in {selectedLang}</span>
+                      )}
                     </span>
+                    <span className="flex shrink-0 items-center gap-1.5">
+                      {item.complexity && (
+                        <span className="hidden rounded bg-slate-100 px-1.5 py-0.5 font-mono text-[10px] text-slate-600 sm:inline dark:bg-white/[0.06] dark:text-slate-300">
+                          {item.complexity}
+                        </span>
+                      )}
+                      <span className="text-xs text-slate-400">{item.category}</span>
+                    </span>
+                  </div>
+                  {item.hook && (
+                    <p className="line-clamp-1 pl-6 text-xs text-slate-500 dark:text-slate-400">
+                      {item.hook}
+                    </p>
                   )}
-                  <span className="text-xs text-slate-400">{item.category}</span>
-                </span>
-              </div>
-              {item.hook && (
-                <p className="line-clamp-1 pl-6 text-xs text-slate-500 dark:text-slate-400">
-                  {item.hook}
-                </p>
-              )}
-            </button>
-          ))}
-        </div>
-      )}
+                </button>
+              )
+            })}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {big && (
         <div className="mt-4 flex flex-wrap justify-center gap-2">
