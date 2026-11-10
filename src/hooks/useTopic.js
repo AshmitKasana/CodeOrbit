@@ -103,6 +103,10 @@ export function useTopic(rawQuery, level) {
     [result, conversation]
   )
 
+  const clearConversation = useCallback(() => {
+    setConversation([])
+  }, [])
+
   return {
     status,
     stageIndex,
@@ -113,6 +117,7 @@ export function useTopic(rawQuery, level) {
     retry,
     conversation,
     askFollowUp,
+    clearConversation,
     followUpLoading,
   }
 }

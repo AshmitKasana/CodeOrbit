@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
-import { Play, RotateCcw, Terminal } from 'lucide-react'
+import { Check, Copy, Play, RotateCcw, Terminal } from 'lucide-react'
 import LanguageTabs from './LanguageTabs'
 
 const Editor = lazy(() => import('@monaco-editor/react'))
@@ -172,6 +172,7 @@ export default function CodePlayground({ examples = [] }) {
   const [code, setCode] = useState(initialCode)
   const [output, setOutput] = useState(null)
   const [running, setRunning] = useState(false)
+  const [copied, setCopied] = useState(false)
 
   useEffect(() => {
     if (!languages.includes(activeLang)) {
@@ -187,6 +188,16 @@ export default function CodePlayground({ examples = [] }) {
   function reset() {
     setCode(examples.find((e) => e.language === activeLang)?.code || '')
     setOutput(null)
+  }
+
+  async function copyCode() {
+    try {
+      await navigator.clipboard.writeText(code)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 1500)
+    } catch {
+      /* clipboard unavailable */
+    }
   }
 
   function run() {
@@ -217,12 +228,18 @@ export default function CodePlayground({ examples = [] }) {
           />
         </Suspense>
       </div>
-      <div className="flex items-center gap-2 px-4 py-3">
-        <button type="button" onClick={run} disabled={running} className="btn-primary py-1.5">
-          <Play size={14} /> {running ? 'Running...' : 'Run'}
-        </button>
-        <button type="button" onClick={reset} className="btn-secondary py-1.5">
-          <RotateCcw size={14} /> Reset
+      <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-3">
+        <div className="flex items-center gap-2">
+          <button type="button" onClick={run} disabled={running} className="btn-primary py-1.5">
+            <Play size={14} /> {running ? 'Running...' : 'Run'}
+          </button>
+          <button type="button" onClick={reset} className="btn-secondary py-1.5">
+            <RotateCcw size={14} /> Reset
+          </button>
+        </div>
+        <button type="button" onClick={copyCode} className="btn-secondary py-1.5 text-xs">
+          {copied ? <Check size={13} /> : <Copy size={13} />}
+          {copied ? 'Copied' : 'Copy Code'}
         </button>
       </div>
       {output && (

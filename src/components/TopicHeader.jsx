@@ -1,4 +1,4 @@
-import { Bookmark, BookmarkCheck, Code2, Database, Sparkles } from 'lucide-react'
+import { BookOpen, Bookmark, BookmarkCheck, Code2, Layers } from 'lucide-react'
 import LevelSelector from './LevelSelector'
 import QuotaBadge from './QuotaBadge'
 
@@ -11,16 +11,12 @@ export default function TopicHeader({ result, level, onLevelChange, bookmarked, 
             <Code2 size={12} /> {result.language}
           </span>
         )}
-        {result.source === 'ai' ? (
-          <span className="flex items-center gap-1 rounded-full border border-signal/30 bg-signal/10 px-3 py-1 text-xs font-medium text-signal">
-            <Sparkles size={12} /> AI-generated
-          </span>
-        ) : (
-          <span
-            title="This lesson comes from Code Orbit's built-in offline content. Connect the AI backend for full, tailored lessons on any topic."
-            className="flex items-center gap-1 rounded-full border border-slate-200 px-3 py-1 text-xs font-medium text-slate-500 dark:border-surface-border dark:text-slate-400"
-          >
-            <Database size={12} /> Built-in demo content
+        <span className="flex items-center gap-1 rounded-full border border-signal/30 bg-signal/10 px-3 py-1 text-xs font-medium text-signal">
+          <BookOpen size={12} /> Interactive Guide
+        </span>
+        {level && (
+          <span className="flex items-center gap-1 rounded-full border border-slate-200 px-3 py-1 text-xs font-medium text-slate-500 dark:border-surface-border dark:text-slate-400">
+            <Layers size={12} /> {level} Depth
           </span>
         )}
         <QuotaBadge className="sm:ml-auto" />

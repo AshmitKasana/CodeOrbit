@@ -58,7 +58,7 @@ export default function Learn() {
   const { user } = useAuth()
 
   const [level, setLevel] = useState('Beginner')
-  const { status, stageIndex, result, error, limit, retry, conversation, askFollowUp, followUpLoading } = useTopic(rawQuery, level)
+  const { status, stageIndex, result, error, limit, retry, conversation, askFollowUp, clearConversation, followUpLoading } = useTopic(rawQuery, level)
   const [bookmarked, setBookmarked] = useState(false)
   const [exampleLang, setExampleLang] = useState(null)
   const [showPlayground, setShowPlayground] = useState(false)
@@ -267,7 +267,7 @@ export default function Learn() {
           </ExplanationSection>
 
           <div className="pb-12 pt-4">
-            <FollowUpChat conversation={conversation} loading={followUpLoading} onAsk={askFollowUp} />
+            <FollowUpChat conversation={conversation} loading={followUpLoading} onAsk={askFollowUp} onClear={clearConversation} />
           </div>
         </div>
       </div>

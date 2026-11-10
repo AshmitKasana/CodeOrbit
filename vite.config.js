@@ -72,4 +72,36 @@ export default defineConfig({
       'framer-motion',
     ],
   },
+  build: {
+    chunkSizeWarningLimit: 900,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('react-syntax-highlighter') || id.includes('refractor') || id.includes('prismjs')) {
+              return 'vendor-syntax'
+            }
+            if (id.includes('@monaco-editor')) {
+              return 'vendor-monaco'
+            }
+            if (id.includes('framer-motion')) {
+              return 'vendor-motion'
+            }
+            if (id.includes('@supabase')) {
+              return 'vendor-supabase'
+            }
+            if (id.includes('react-router') || id.includes('react-dom') || id.includes('/react/')) {
+              return 'vendor-react'
+            }
+          }
+          if (id.includes('/src/lib/questionBank') || id.includes('/src/data/')) {
+            return 'curriculum-data'
+          }
+          if (id.includes('/src/services/knowledgeBase') || id.includes('/src/services/guideLessons')) {
+            return 'lessons-catalog'
+          }
+        },
+      },
+    },
+  },
 })

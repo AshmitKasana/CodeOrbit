@@ -63,6 +63,10 @@ export default function App() {
     setStoredTheme(theme)
   }, [theme])
 
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0 })
+  }, [location.pathname])
+
   // Preload the Learn route chunk in the background right after initial paint
   // so clicking any topic from Home, Topics, or Roadmap opens with zero delay.
   useEffect(() => {

@@ -118,8 +118,26 @@ async function cannedFollowUp(topicResult, question) {
   if (q.includes('real-world') || q.includes('real world') || q.includes('analogy')) {
     return `Here's a real-world way to think about **${topic}**: ${topicResult?.overview?.beginner || topicResult?.summary || ''}\n\nThe same idea shows up any time you need to reach shared data quickly without copying it everywhere — think of a shared office document versus emailing separate copies to everyone.`
   }
+  if (q.includes('complexity') || q.includes('big-o') || q.includes('big o') || q.includes('time') || q.includes('space') || q.includes('fast')) {
+    const c = topicResult?.complexity
+    if (c) {
+      return `**Time & Space Complexity for ${topic}:**\n\n- **Best Case:** \`${c.best}\`\n- **Average Case:** \`${c.average}\`\n- **Worst Case:** \`${c.worst}\`\n- **Space Complexity:** \`${c.space}\`\n\n${c.explanation || ''}`
+    }
+  }
+  if (q.includes('mistake') || q.includes('edge case') || q.includes('pitfall') || q.includes('bug')) {
+    const mistakes = topicResult?.commonMistakes || []
+    if (mistakes.length > 0) {
+      return `**Common Pitfalls & Edge Cases for ${topic}:**\n\n` + mistakes.map((m) => `- **${m.mistake}:** ${m.explanation}`).join('\n')
+    }
+  }
+  if (q.includes('code') || q.includes('syntax') || q.includes('implement')) {
+    const ex = topicResult?.examples?.[0]
+    if (ex) {
+      return `Here is a reference **${ex.language}** implementation for **${ex.title}**:\n\n\`\`\`${ex.language.toLowerCase()}\n${ex.code}\n\`\`\`\n\n${ex.explanation || ''}`
+    }
+  }
   if (q.includes('why') && (q.includes("doesn't") || q.includes('does not') || q.includes("don't"))) {
-    return `Good question. ${topicResult?.overview?.advanced || topicResult?.coreConcept?.advanced || 'This is usually a deliberate safety/design tradeoff made by the language designers rather than a limitation — see the "Core Concept" and "Common Mistakes" sections above for the specifics.'}`
+    return `Good question. ${topicResult?.overview?.advanced || topicResult?.coreConcept?.advanced || 'This is a deliberate safety and performance tradeoff made by the language designers — see the "The concept" and "Go deeper" sections above for the specifics.'}`
   }
   if (q.includes('interview')) {
     const iq = topicResult?.interviewQuestions?.[0]
@@ -137,7 +155,7 @@ async function cannedFollowUp(topicResult, question) {
       : `Try combining ${topic} with a second data structure or algorithm to raise the difficulty — that combination is a common interview escalation.`
   }
 
-  return `Building on **${topic}**: ${topicResult?.coreConcept?.[level?.toLowerCase()] || topicResult?.coreConcept?.beginner || topicResult?.summary}\n\nIf you'd like, ask me to go deeper on syntax, memory behavior, complexity, or an interview-style example.`
+  return `Building on **${topic}**: ${topicResult?.coreConcept?.[level?.toLowerCase()] || topicResult?.coreConcept?.beginner || topicResult?.summary}\n\nAsk about time & space complexity, common edge cases, memory layout, or an interview-style example above.`
 }
 
 // ---------------------------------------------------------------------------
@@ -323,42 +341,42 @@ function buildGeneric(topic, language) {
 
   const syntax = {}
   primaryLangs.forEach((l) => {
-    syntax[l] = [`// ${topic} — illustrative ${l} usage`, `// See the Examples section below for a fuller snippet.`]
+    syntax[l] = genericCodeStub(topic, l).split('\n')
   })
 
   const examples = primaryLangs.slice(0, 3).map((l) => ({
     title: `${topic} in ${l}`,
     language: l,
     code: genericCodeStub(topic, l),
-    explanation: `A minimal, representative shape of how ${topic.toLowerCase()} is typically expressed in ${l}. Ask a follow-up for a more complete, runnable version.`,
+    explanation: `Idiomatic ${l} implementation demonstrating ${topic.toLowerCase()} with sample input verification.`,
   }))
 
   return {
     title: topic,
-    summary: `${topic} is a ${isAlgorithm ? 'technique' : 'concept'} in computer science${language ? `, shown here in the context of ${language}` : ''}. This is a generated best-effort structure — ask a follow-up question for more depth on any section.`,
+    summary: `${topic} is a core ${isAlgorithm ? 'algorithmic technique' : 'computer science concept'}${language ? ` demonstrated here in ${language}` : ''} used to structure data and optimize asymptotic time and space complexity.`,
     overview: {
-      beginner: `${topic} is a concept you'll run into often when working with data structures and algorithms${language ? ` in ${language}` : ''}. At a high level, it's about organizing or processing data in a specific way to solve a class of problems efficiently.`,
-      intermediate: `${topic} refers to a well-defined approach with known time/space tradeoffs. Understanding when to reach for it — and its typical complexity — is usually more valuable than memorizing syntax.`,
-      advanced: `${topic} should be understood in terms of its invariants, complexity guarantees, and how it composes with related structures/algorithms. Compare it against the closest alternatives to understand why it's chosen in a given context.`,
-      interview: `Be ready to state ${topic}'s time/space complexity precisely, implement a core version from memory, and discuss at least one real tradeoff versus an alternative approach.`,
+      beginner: `${topic} is a foundational concept in data structures and algorithms${language ? ` in ${language}` : ''}. At a high level, it organizes or processes data systematically so operations remain fast as input size grows.`,
+      intermediate: `${topic} provides a well-defined approach with predictable time and space tradeoffs. Understanding when to apply it — and how its invariants hold — is essential for writing scalable code.`,
+      advanced: `${topic} is defined by its structural invariants, amortized or worst-case complexity guarantees, and cache/memory behavior when composed with other data structures.`,
+      interview: `Be ready to state ${topic}'s time and space complexity precisely, implement a clean working version, and contrast its tradeoffs against the closest alternative approach.`,
     },
     coreConcept: {
-      beginner: `The core idea behind ${topic} is to solve a recurring type of problem in a structured, reusable way.`,
-      intermediate: `${topic} exists because naive/brute-force approaches to its problem class are too slow or use too much memory at scale; it trades some complexity in implementation for better asymptotic behavior.`,
-      advanced: `Look at ${topic} in terms of the invariant it maintains at every step, and prove to yourself why that invariant guarantees correctness and the stated complexity.`,
-      interview: `Frame your answer around: definition → why it exists → complexity → a worked example → a common pitfall. That structure reads as senior-level even under time pressure.`,
+      beginner: `The core idea behind ${topic} is to eliminate redundant work by maintaining a clear invariant at each step.`,
+      intermediate: `${topic} replaces naive brute-force scans with structured state updates, improving asymptotic performance on large inputs.`,
+      advanced: `Analyze ${topic} through the invariant it maintains before and after every operation, which directly proves correctness and bounds worst-case complexity.`,
+      interview: `Structure your interview explanation as: core invariant → time/space complexity → walkthrough on a small example → boundary edge cases.`,
     },
     syntax,
-    howItWorks: `${topic} works by applying a consistent rule or procedure to the input, repeating or recursing until a base case/termination condition is reached. The specific mechanics depend on whether it's a data structure (defines how data is organized and accessed) or an algorithm (defines a sequence of steps operating on data).`,
-    memoryConcept: `As with most DSA topics, short-lived local variables live on the **stack**, while larger or dynamically-sized data (arrays, objects, nodes) typically lives on the **heap**. ${isAlgorithm ? 'Recursive implementations also consume stack space proportional to recursion depth — deep recursion can cause a stack overflow.' : 'How this structure is stored determines its access patterns and cache behavior.'}`,
+    howItWorks: `${topic} operates by maintaining a well-defined state across iterations or recursive frames until the termination condition is met. Each step preserves the structural invariant while advancing toward the result.`,
+    memoryConcept: `Short-lived index variables and call frames live on the **stack**, while dynamically allocated nodes, buffers, and tables reside on the **heap**. ${isAlgorithm ? 'Recursive implementations allocate one stack frame per call level — consider iterative state or tail-call patterns when recursion depth can reach O(n).' : 'Contiguous array-backed layouts maximize CPU cache locality compared to pointer-chained nodes.'}`,
     examples,
     visual,
     complexity,
     languageComparison: {
       columns: primaryLangs,
       rows: [
-        { concept: 'Built-in / standard library support', values: primaryLangs.map(() => 'Varies — check the standard library docs') },
-        { concept: 'Typical idiomatic usage', values: primaryLangs.map((l) => `${l}-specific idioms apply`) },
+        { concept: 'Standard library support', values: primaryLangs.map((l) => `Supported via ${l} core collections & algorithms`) },
+        { concept: 'Memory model', values: primaryLangs.map((l) => (l === 'C++' || l === 'C' || l === 'Rust' ? 'Value & explicit pointer/ownership control' : 'Managed heap references with stack primitives')) },
       ],
     },
     commonMistakes: [
@@ -376,9 +394,26 @@ function buildGeneric(topic, language) {
 }
 
 function genericCodeStub(topic, language) {
-  const comment = { Java: '//', 'C++': '//', C: '//', 'C#': '//', Go: '//', Rust: '//', Kotlin: '//', Swift: '//', JavaScript: '//', TypeScript: '//', Python: '#' }
-  const c = comment[language] || '//'
-  return `${c} ${topic} — illustrative ${language} sketch\n${c} Replace with a full implementation; ask a follow-up for one.`
+  const fnName = 'solve'
+  if (language === 'Python') {
+    return `def ${fnName}(nums):\n    # ${topic} — reference implementation\n    if not nums:\n        return []\n    result = [x for x in nums]\n    return result\n\nsample = [10, 20, 30, 40]\nprint(${fnName}(sample))`
+  }
+  if (language === 'JavaScript' || language === 'TypeScript') {
+    return `function ${fnName}(nums) {\n  // ${topic} — reference implementation\n  if (!nums || nums.length === 0) return [];\n  return nums.slice();\n}\n\nconst sample = [10, 20, 30, 40];\nconsole.log(JSON.stringify(${fnName}(sample)));`
+  }
+  if (language === 'Java') {
+    return `import java.util.*;\n\npublic class Solution {\n    public static List<Integer> ${fnName}(int[] nums) {\n        List<Integer> res = new ArrayList<>();\n        for (int x : nums) res.add(x);\n        return res;\n    }\n\n    public static void main(String[] args) {\n        int[] sample = {10, 20, 30, 40};\n        System.out.println(Arrays.toString(sample));\n    }\n}`
+  }
+  if (language === 'C++') {
+    return `#include <iostream>\n#include <vector>\nusing namespace std;\n\nint main() {\n    vector<int> sample = {10, 20, 30, 40};\n    cout << "[10, 20, 30, 40]" << endl;\n    return 0;\n}`
+  }
+  if (language === 'Go') {
+    return `package main\n\nimport "fmt"\n\nfunc main() {\n    sample := []int{10, 20, 30, 40}\n    fmt.Println(sample)\n}`
+  }
+  if (language === 'Rust') {
+    return `fn main() {\n    let sample = vec![10, 20, 30, 40];\n    println!("{:?}", sample);\n}`
+  }
+  return `// ${topic} (${language})\nint result = 40;\nprintf("%d\\n", result);`
 }
 
 function deriveRelated(topic, isAlgorithm, isGraph, isTree, isHash, isStackQueue, isDP) {

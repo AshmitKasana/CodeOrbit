@@ -9,16 +9,17 @@ const PRISM_LANG = {
   TypeScript: 'typescript', 'C#': 'csharp', Go: 'go', Rust: 'rust', Kotlin: 'kotlin', Swift: 'swift',
 }
 
-export default function CodeBlock({ code, language = 'JavaScript', collapsible = false, maxLines = 14 }) {
+export default function CodeBlock({ code = '', language = 'JavaScript', collapsible = false, maxLines = 14 }) {
   const [copied, setCopied] = useState(false)
   const [expanded, setExpanded] = useState(!collapsible)
-  const lines = code.split('\n')
+  const safeCode = typeof code === 'string' ? code : String(code ?? '')
+  const lines = safeCode.split('\n')
   const isLong = collapsible && lines.length > maxLines
-  const shown = expanded || !isLong ? code : lines.slice(0, maxLines).join('\n') + '\n// ...'
+  const shown = expanded || !isLong ? safeCode : lines.slice(0, maxLines).join('\n') + '\n// ...'
 
   async function copy() {
     try {
-      await navigator.clipboard.writeText(code)
+      await navigator.clipboard.writeText(safeCode)
       setCopied(true)
       setTimeout(() => setCopied(false), 1500)
     } catch {

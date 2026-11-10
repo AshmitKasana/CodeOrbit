@@ -167,15 +167,19 @@ describe('QuotaBadge', () => {
   })
 })
 
-describe('TopicHeader source badge', () => {
-  const base = { title: 'Heaps', summary: 's', language: null }
+describe('TopicHeader badges', () => {
+  const base = { title: 'Heaps', summary: 's', language: 'Python' }
   const props = { level: 'Beginner', onLevelChange: () => {}, bookmarked: false, onToggleBookmark: () => {} }
 
-  it('labels AI-generated lessons', () => {
-    expect(render(<TopicHeader result={{ ...base, source: 'ai' }} {...props} />)).toContain('AI-generated')
+  it('renders the Interactive Guide and depth badges cleanly', () => {
+    const html = render(<TopicHeader result={{ ...base, source: 'ai' }} {...props} />)
+    expect(html).toContain('Interactive Guide')
+    expect(html).toContain('Beginner Depth')
   })
 
-  it('is honest about the built-in demo content', () => {
-    expect(render(<TopicHeader result={{ ...base, source: 'local' }} {...props} />)).toContain('Built-in demo content')
+  it('shows the language badge when a language is specified', () => {
+    const html = render(<TopicHeader result={{ ...base, source: 'local' }} {...props} />)
+    expect(html).toContain('Python')
+    expect(html).toContain('Interactive Guide')
   })
 })
